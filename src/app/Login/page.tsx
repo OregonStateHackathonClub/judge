@@ -14,7 +14,7 @@ export default function Home() {
 
           Password:
           <input
-            type="text"
+            type="password"
             placeholder="**********"
             className="border px-2 py-1"
           />
