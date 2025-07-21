@@ -17,6 +17,7 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  teams    UserToTeams[]
 
   @@unique([email])
   @@map("user")
@@ -67,7 +68,77 @@ model Verification {
   @@map("verification")
 }
 
-model Submission {
-  id   String @id
-  name String
+model Hackathons {
+    id          String         @id
+    name        String      @unique
+    year        String
+    sponsors    String
+    rubric      Json
+    description String?
+    teams       Teams[]
+    submissions Submissions[]
+    tracks      Tracks[]
+
+    @@map("hackathons")
+}
+
+model Teams {
+    teamId       String          @id
+    name         String
+    submissionId String          
+    hackathonId  String
+    //relations
+    submission   Submissions   @relation(fields: [submissionId], references: [id])
+    hackathon    Hackathons    @relation(fields: [hackathonId], references: [id])
+    users        UserToTeams[]
+    @@map("teams")
+}
+
+model UserToTeams {
+    teamId String
+    userId String
+    // relations
+    team Teams @relation(fields: [teamId], references: [teamId])
+    user User @relation(fields: [userId], references: [id])
+    @@id([teamId, userId])
+    @@map("userToTeams")
+}
+
+model Submissions {
+    id           String      @id
+    name         String
+    bio          String
+    githubURL    String
+    ytVideo      String
+    images       String
+    comments     String
+    rubric       Json
+    score        Int
+    hackathonId  String
+    // relations
+    hackathon    Hackathons @relation(fields: [hackathonId], references: [id])
+    trackLinks   MergeTracks[]
+    Team Teams[]
+    @@map("submissions")
+}
+
+model Tracks {
+    id          String          @id
+    name        String
+    description String
+    hackathonId String
+    //realtions
+    hackathon   Hackathons    @relation(fields: [hackathonId], references: [id])
+    submissions MergeTracks[]
+    @@map("track")
+}
+
+model MergeTracks {
+    trackId      String
+    submissionId String
+    // relations
+    track      Tracks      @relation(fields: [trackId], references: [id])
+    submission Submissions @relation(fields: [submissionId], references: [id])
+    @@id([trackId, submissionId])
+    @@map("mergeTrack")
 }

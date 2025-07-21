@@ -5,6 +5,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, install npm if you haven't already:
 ```bash
 npm install
+# also run if errors with dotenv arise
+npm install -g dotenv-cli
 ```
 
 Then, run the development server:
