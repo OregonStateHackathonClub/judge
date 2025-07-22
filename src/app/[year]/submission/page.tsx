@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import { Title } from "./title"
+import { Description } from "./description"
 
 const fetchUserWithDelay = () =>
   new Promise((res) =>
@@ -18,6 +20,8 @@ export default function Page({ params }: { params: { year: string } }) {
 
   return (
     <>
+      <Title />
+      <Description />
       <button onClick={write}>test server action</button>
       <Suspense fallback={"Loading..."}>
         <PeopleData />
