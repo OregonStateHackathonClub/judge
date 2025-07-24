@@ -1,3 +1,9 @@
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+
 
 
 export default function Home() {
@@ -11,48 +17,34 @@ export default function Home() {
         <div className="text-2xl pt-5">
           Team Name
         </div>
-        <input
-          type="text"
-          className="border px-2 py-1"
-        />
-        <div className="text-2xl pt-10">
+        <Input className="w-50 m-2.5"/>
+
+        <div className="text-2xl pt-5">
           Team Members
         </div>
         <ul className="space-y-2 pl-10">
           <li>Your Username</li>
-          <li><button className="outline-1 px-4 py-1 rounded-4xl hover:bg-gray-100">Add Teammate</button></li>
-          <li><button className="outline-1 px-4 py-1 rounded-4xl hover:bg-gray-100">Add Teammate</button></li>
-          <li><button className="outline-1 px-4 py-1 rounded-4xl hover:bg-gray-100">Add Teammate</button></li>
+          <li><Button variant="outline">Add Teammate</Button></li>
         </ul>
 
         <div className="flex text-xl gap-2 pt-10">
-          <input
-            type="checkbox"
-            className="w-4"
-          />
-          Looking for additional team members
+          <Checkbox id="lft-box"/>
+          <Label htmlFor="lft-box">Looking for additional team members</Label>
         </div>
 
         <div className="p-5 pl-10">
           <div>
-            Contact Info
+            Contact Email
           </div>
-          <input
-            type="text"
-            className="border px-2 py-1"
-          />
+          <Input type="email" placeholder="benny@beaverhacks.com" className="m-2.5 w-75" />
 
-          <div>
+          <div> 
             Brief Project Description
           </div>
-          <textarea
-            className="border px-2 py-1 resize-none"
-          />
+          <Textarea className="m-2.5"/>
         </div>
 
-        <button className="bg-green-500 text-white px-4 py-2 rounded-4xl hover:bg-green-600">
-          Accept Team
-        </button>
+        <Button className="bg-green-500 hover:bg-green-600 w-30 h-10 rounded-4xl">Accept Team</Button>
       </form>
 
     </div>

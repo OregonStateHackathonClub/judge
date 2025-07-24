@@ -1,3 +1,5 @@
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 
 
 export default function Home() {
@@ -13,14 +15,11 @@ export default function Home() {
           Ask your group leader for an Invite Code:
         </div>
 
-        <div className="flex gap-2 p-5">
-          <input
-            type="text"
-            className="border px-2 py-1"
-          />
-          <button className="bg-blue-500 text-white px-4 py-2 rounded-4xl hover:bg-blue-600">
+        <div className="flex w-full items-center gap-2 p-5">
+          <Input className="h-15 w-75 !text-2xl uppercase" />
+          <Button variant="outline" className="h-15 w-30 text-xl">
             Join Team
-          </button>
+          </Button>
         </div>
 
         <div className="text-xl pt-10">
