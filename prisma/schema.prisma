@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Users {
   id            String    @id
   name          String
   email         String
@@ -15,15 +15,27 @@ model User {
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
-  sessions      Session[]
-  accounts      Account[]
-  teams    UserToTeams[]
+  sessions      Sessions[]
+  accounts      Accounts[]
+  teams         UsersToTeams[]
+  profiles      UserProfiles[]
 
   @@unique([email])
   @@map("user")
 }
 
-model Session {
+model UserProfiles {
+  id           String   @id @default(cuid())
+  userId       String
+  appId        String
+
+  // other app specific data
+
+  user Users @relation(fields: [userId], references: [id])
+  @@unique([userId, appId])
+}
+
+model Sessions {
   id        String   @id
   expiresAt DateTime
   token     String
@@ -32,18 +44,18 @@ model Session {
   ipAddress String?
   userAgent String?
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
   @@map("session")
 }
 
-model Account {
+model Accounts {
   id                    String    @id
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  Users      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -57,7 +69,7 @@ model Account {
   @@map("account")
 }
 
-model Verification {
+model Verifications {
   id         String    @id
   identifier String
   value      String
@@ -85,21 +97,21 @@ model Hackathons {
 model Teams {
     teamId       String          @id
     name         String
-    submissionId String          
+    submissionId String?          
     hackathonId  String
     //relations
-    submission   Submissions   @relation(fields: [submissionId], references: [id])
+    submission   Submissions?   @relation(fields: [submissionId], references: [id])
     hackathon    Hackathons    @relation(fields: [hackathonId], references: [id])
-    users        UserToTeams[]
+    users        UsersToTeams[]
     @@map("teams")
 }
 
-model UserToTeams {
+model UsersToTeams {
     teamId String
     userId String
     // relations
     team Teams @relation(fields: [teamId], references: [teamId])
-    user User @relation(fields: [userId], references: [id])
+    user Users @relation(fields: [userId], references: [id])
     @@id([teamId, userId])
     @@map("userToTeams")
 }
@@ -117,7 +129,7 @@ model Submissions {
     hackathonId  String
     // relations
     hackathon    Hackathons @relation(fields: [hackathonId], references: [id])
-    trackLinks   MergeTracks[]
+    trackLinks   TracksToSubmissions[]
     Team Teams[]
     @@map("submissions")
 }
@@ -129,11 +141,11 @@ model Tracks {
     hackathonId String
     //realtions
     hackathon   Hackathons    @relation(fields: [hackathonId], references: [id])
-    submissions MergeTracks[]
+    submissions TracksToSubmissions[]
     @@map("track")
 }
 
-model MergeTracks {
+model TracksToSubmissions {
     trackId      String
     submissionId String
     // relations
