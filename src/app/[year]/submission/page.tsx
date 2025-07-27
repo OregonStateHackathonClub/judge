@@ -6,6 +6,14 @@ import { useForm } from "react-hook-form"
 
 const MAX_STEPS = 4
 
+type SubmissionFormValues = {
+    projectTitle: string;
+    projectDescription: string;
+    githubLink: string;
+    youtubeLink: string;
+    uploadPhotos: string;
+}
+
 export default function Page ({ params }: { params: { year: string } }) {
   const [ formStep, setFormStep ] = React.useState(0)
   const { 
@@ -13,7 +21,7 @@ export default function Page ({ params }: { params: { year: string } }) {
     register,
     handleSubmit,
     formState: { errors, isValid } 
-  } = useForm({ mode: "all" })
+  } = useForm<SubmissionFormValues>({ mode: "all" })
 
   // function to move onto the next step of th eform
   const nextStepForm = () => {
@@ -63,6 +71,7 @@ export default function Page ({ params }: { params: { year: string } }) {
           </Button>
           <Button
             type="button"
+            disabled={!isValid}
             onClick={handleSubmit(submitForm)}
           >
             Submit Project
@@ -105,14 +114,27 @@ export default function Page ({ params }: { params: { year: string } }) {
     }
   }
   // submission
-  const submitForm = (values : any): void => {
-    window.alert(JSON.stringify(values, null, 2))
-    nextStepForm();
+  const submitForm = async (values : SubmissionFormValues): Promise<void> => {
+    try {
+      console.log("Submitting values", values)
+      const response = await fetch(`/${params.year}/submission/api`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json"},
+        body: JSON.stringify(values),
+      })
+      if (!response.ok) {
+        throw new Error("Failed to save submission")
+      } 
+      // window.alert(JSON.stringify(values, null, 2))
+      nextStepForm();
+    } catch {
+        window.alert("Error saving submission")
+    }
   }
 
   return (
     <>
-    <form onSubmit={handleSubmit(submitForm)}>
+    <form>
       <div><p>Step {formStep + 1} of {MAX_STEPS}</p></div>
       {/* Title and Description of project */}
       {formStep === 0 && (
