@@ -3,6 +3,7 @@
 import React  from "react"
 import { Button } from "@/components/ui/button"
 import { useForm } from "react-hook-form"
+import { sendData } from "./action"
 
 const MAX_STEPS = 4
 
@@ -115,21 +116,13 @@ export default function Page ({ params }: { params: { year: string } }) {
   }
   // submission
   const submitForm = async (values : SubmissionFormValues): Promise<void> => {
-    try {
-      console.log("Submitting values", values)
-      const response = await fetch(`/${params.year}/submission/api`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json"},
-        body: JSON.stringify(values),
-      })
-      if (!response.ok) {
-        throw new Error("Failed to save submission")
-      } 
-      // window.alert(JSON.stringify(values, null, 2))
-      nextStepForm();
-    } catch {
-        window.alert("Error saving submission")
-    }
+      const result = await sendData(values)
+
+      if (result.success) {
+        nextStepForm();
+      } else {
+        window.alert(result.error || "Error saving submission")
+      }
   }
 
   return (

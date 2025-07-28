@@ -1,17 +1,21 @@
-import { NextResponse } from "next/server"
-import { prisma } from "../prisma"
+"use server"
+
+import { prisma } from "./prisma"
+import { randomUUID } from "crypto"
 
 // Declare a post function to handle post requests 
-export async function POST(request: Request) {
-    // Declare data to expect a request JSON
-    const data = await request.json();
-    console.log("Received data", data)
-    
+export async function sendData(data: {
+    projectTitle: string;
+    projectDescription: string;
+    githubLink: string;
+    youtubeLink: string
+    uploadPhotos: string;
+}) {    
     // Read JSON data from the submission form
     try {
         const submission = await prisma.submissions.create({
             data : {
-                id: "1",
+                id: randomUUID(),
                 name: data.projectTitle,
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
@@ -20,16 +24,15 @@ export async function POST(request: Request) {
                 comments: "",
                 rubric: {},
                 score: 0,
-                hackathonId: "123"
+                hackathonId: "234"
             },
         })
         console.log("Created submission", submission)
         // Return if the submission is successful
-        return NextResponse.json(submission, {status: 201})
-
+        return { success: true, submission}
     } catch (error) {
         // Catch an error if anything goes wrong
         console.error("Submission error", error)
-        return NextResponse.json({ error: "Internal Server Error"}, { status: 500})
+        return {success: false, error: "Server error"}
     }
 }
