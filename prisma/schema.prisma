@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Users {
-  id            String    @id
+  id            String         @id
   name          String
   email         String
   emailVerified Boolean
@@ -25,13 +25,14 @@ model Users {
 }
 
 model UserProfiles {
-  id           String   @id @default(cuid())
-  userId       String
-  appId        String
+  id     String @id @default(cuid())
+  userId String
+  appId  String
 
   // other app specific data
 
   user Users @relation(fields: [userId], references: [id])
+
   @@unique([userId, appId])
 }
 
@@ -44,7 +45,7 @@ model Sessions {
   ipAddress String?
   userAgent String?
   userId    String
-  user      Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
   @@map("session")
@@ -55,7 +56,7 @@ model Accounts {
   accountId             String
   providerId            String
   userId                String
-  user                  Users      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -65,6 +66,7 @@ model Accounts {
   password              String?
   createdAt             DateTime
   updatedAt             DateTime
+  Teams                 Teams[]
 
   @@map("account")
 }
@@ -81,76 +83,85 @@ model Verifications {
 }
 
 model Hackathons {
-    id          String         @id
-    name        String      @unique
-    year        String
-    sponsors    String
-    rubric      Json
-    description String?
-    teams       Teams[]
-    submissions Submissions[]
-    tracks      Tracks[]
+  id          String        @id
+  name        String        @unique
+  year        String
+  sponsors    String
+  rubric      Json
+  description String?
+  teams       Teams[]
+  submissions Submissions[]
+  tracks      Tracks[]
 
-    @@map("hackathons")
+  @@map("hackathons")
 }
 
 model Teams {
-    teamId       String          @id
-    name         String
-    submissionId String?          
-    hackathonId  String
-    //relations
-    submission   Submissions?   @relation(fields: [submissionId], references: [id])
-    hackathon    Hackathons    @relation(fields: [hackathonId], references: [id])
-    users        UsersToTeams[]
-    @@map("teams")
+  teamId       String         @id
+  name         String
+  lookingForTeammates Boolean @default(false)
+  description  String?
+  leaderId     String?
+  submissionId String?
+  hackathonId  String
+  //relations
+  leader       Accounts?       @relation(fields: [leaderId], references: [id])
+  submission   Submissions?   @relation(fields: [submissionId], references: [id])
+  hackathon    Hackathons     @relation(fields: [hackathonId], references: [id])
+  users        UsersToTeams[]
+
+  @@map("teams")
 }
 
 model UsersToTeams {
-    teamId String
-    userId String
-    // relations
-    team Teams @relation(fields: [teamId], references: [teamId])
-    user Users @relation(fields: [userId], references: [id])
-    @@id([teamId, userId])
-    @@map("userToTeams")
+  teamId String
+  userId String
+  // relations
+  team   Teams  @relation(fields: [teamId], references: [teamId])
+  user   Users  @relation(fields: [userId], references: [id])
+
+  @@id([teamId, userId])
+  @@map("userToTeams")
 }
 
 model Submissions {
-    id           String      @id
-    name         String
-    bio          String
-    githubURL    String
-    ytVideo      String
-    images       String
-    comments     String
-    rubric       Json
-    score        Int
-    hackathonId  String
-    // relations
-    hackathon    Hackathons @relation(fields: [hackathonId], references: [id])
-    trackLinks   TracksToSubmissions[]
-    Team Teams[]
-    @@map("submissions")
+  id          String                @id
+  name        String
+  bio         String
+  githubURL   String
+  ytVideo     String
+  images      String
+  comments    String
+  rubric      Json
+  score       Int
+  hackathonId String
+  // relations
+  hackathon   Hackathons            @relation(fields: [hackathonId], references: [id])
+  trackLinks  TracksToSubmissions[]
+  Team        Teams[]
+
+  @@map("submissions")
 }
 
 model Tracks {
-    id          String          @id
-    name        String
-    description String
-    hackathonId String
-    //realtions
-    hackathon   Hackathons    @relation(fields: [hackathonId], references: [id])
-    submissions TracksToSubmissions[]
-    @@map("track")
+  id          String                @id
+  name        String
+  description String
+  hackathonId String
+  //realtions
+  hackathon   Hackathons            @relation(fields: [hackathonId], references: [id])
+  submissions TracksToSubmissions[]
+
+  @@map("track")
 }
 
 model TracksToSubmissions {
-    trackId      String
-    submissionId String
-    // relations
-    track      Tracks      @relation(fields: [trackId], references: [id])
-    submission Submissions @relation(fields: [submissionId], references: [id])
-    @@id([trackId, submissionId])
-    @@map("mergeTrack")
+  trackId      String
+  submissionId String
+  // relations
+  track        Tracks      @relation(fields: [trackId], references: [id])
+  submission   Submissions @relation(fields: [submissionId], references: [id])
+
+  @@id([trackId, submissionId])
+  @@map("mergeTrack")
 }
