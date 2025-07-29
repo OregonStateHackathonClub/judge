@@ -53,7 +53,6 @@ export default function Home() {
         components[i].classList.add("hidden");
       }
     }
-    console.log(lft)
   }
 
   return (

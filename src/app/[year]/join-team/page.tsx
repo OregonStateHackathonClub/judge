@@ -49,7 +49,7 @@ export default function Home() {
           Or browse groups searching for teammates:
         </div>
 
-        <Suspense fallback={"Loading..."}>
+        <Suspense fallback={"Loading..."} >
           <Teams />
         </Suspense>
 
