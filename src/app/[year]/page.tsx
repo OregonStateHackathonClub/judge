@@ -1,6 +1,5 @@
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -9,11 +8,13 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { PrismaClient } from "@prisma/client";
+import { Suspense } from "react";
+
+
 
 const prisma = new PrismaClient();
 
 export default async function Page({ params }: { params: { year: string } }) {
-  // Fetch the hackathon and its submissions using the year
   const hackathon = await prisma.hackathons.findFirst({
     where: { year: params.year },
     include: {
@@ -29,21 +30,20 @@ export default async function Page({ params }: { params: { year: string } }) {
     );
   }
 
-  // Fetch the tracks for the hackathon
   const tracks = await prisma.tracks.findMany({
     where: { hackathonId: hackathon.id },
   });
 
   return (
     <div>
-      {/* Hero Header */}
+      {/* Header */}
       <div className="h-20 bg-orange-400 flex items-center justify-center">
         <h1 className="text-white font-bold text-5xl">
           {"BeaverHacks " + params.year}
         </h1>
       </div>
 
-      {/* Dropdown Menu */}
+      {/* Dropdown */}
       <div className="flex justify-end p-4">
         <select className="border border-gray-300 rounded-md p-2">
           <option value="all">All Tracks</option>
@@ -55,20 +55,35 @@ export default async function Page({ params }: { params: { year: string } }) {
         </select>
       </div>
 
-      {/* Submissions List */}
-      <div className="flex flex-wrap justify-between p-15">
+      {/* Submission Cards */}
+      <div className="flex flex-wrap justify-between p-4">
         {hackathon.submissions.map((submission) => (
           <div className="w-full sm:w-1/2 md:w-1/3 p-2" key={submission.id}>
-            <Card>
+            <Card className="h-full flex flex-col justify-between">
               <CardHeader>
                 <CardTitle>{submission.name}</CardTitle>
                 <CardDescription>{submission.bio}</CardDescription>
               </CardHeader>
               <CardContent>
-                <p>Score: {submission.score}</p>
-                <p>Comments: {submission.comments}</p>
+                <div className="flex justify-between gap-4">
+                  {/* Left side - text */}
+                  <div className="flex-1">
+                    <p>Score: {submission.score}</p>
+                    <p>Comments: {submission.comments}</p>
+                  </div>
+                  {/* Right side - image cutout */}
+                    {/* {submission.images && ( */}
+                    <div className="h-32 flex items-center justify-center">
+                      <img
+                      src={submission.images || "/beaver.png"}                      
+                      alt={`${submission.name} image`}
+                      className="w-32 h-32 object-cover rounded-md border border-gray-400 shadow-md"
+                      />
+                    </div>
+                    {/* )} */}
+                </div>
               </CardContent>
-              <CardFooter className="flex gap-4">
+              <CardFooter className="flex flex-wrap gap-4">
                 {submission.githubURL && (
                   <Link
                     href={submission.githubURL}
