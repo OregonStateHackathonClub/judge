@@ -130,7 +130,7 @@ model Submissions {
   bio         String
   githubURL   String
   ytVideo     String
-  images      String
+  images      String[]
   comments    String
   rubric      Json
   score       Int
