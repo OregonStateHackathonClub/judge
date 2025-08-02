@@ -4,6 +4,7 @@ import React  from "react"
 import { Button } from "@/components/ui/button"
 import { useForm } from "react-hook-form"
 import { sendData } from "./action"
+import { updateData } from "./action"
 
 const MAX_STEPS = 4
 
@@ -17,6 +18,7 @@ type SubmissionFormValues = {
 
 export default function Page ({ params }: { params: { year: string } }) {
   const [ formStep, setFormStep ] = React.useState(0)
+  const [ submissionId, setSubmissionId] = React.useState<string | null>(null)
   const { 
     watch, 
     register,
@@ -24,6 +26,21 @@ export default function Page ({ params }: { params: { year: string } }) {
     formState: { errors, isValid } 
   } = useForm<SubmissionFormValues>({ mode: "all" })
 
+  const saveDraft = async(values: SubmissionFormValues) => {
+    if (submissionId) {
+      const result = await updateData(submissionId, values)
+      if (!result.success) {
+        window.alert(result.error || "Error saving draft")
+      }
+    } else {
+      const result = await sendData(values)
+      if (result.success) {
+        setSubmissionId(result.submission.id)
+      } else {
+        window.alert(result.error || "Error saving draft")
+      }
+    }
+  }
   // function to move onto the next step of th eform
   const nextStepForm = () => {
     setFormStep(cur => cur + 1)
@@ -97,6 +114,11 @@ export default function Page ({ params }: { params: { year: string } }) {
           >
             Next
           </Button>
+          <Button
+            type="button"
+            disabled={!isValid}
+            onClick={handleSubmit(saveDraft)}
+          >Save</Button>
         </>
       )
     } else {
@@ -110,6 +132,11 @@ export default function Page ({ params }: { params: { year: string } }) {
           >
             Next
           </Button>
+          <Button
+            type="button"
+            disabled={!isValid} 
+            onClick={handleSubmit(saveDraft)}
+          >Save</Button>  
         </>
       )
     }

@@ -3,6 +3,33 @@
 import { prisma } from "./prisma"
 import { randomUUID } from "crypto"
 
+export async function updateData(
+    submissionId: string,
+    data: {
+    projectTitle: string;
+    projectDescription: string;
+    githubLink: string;
+    youtubeLink: string
+    uploadPhotos: string;
+}) {
+    try {
+        const updateSubmission = await prisma.submissions.update({
+            where: { id: submissionId },
+            data: {
+                name: data.projectTitle,
+                bio: data.projectDescription,
+                githubURL: data.githubLink,
+                ytVideo: data.youtubeLink,
+                images: [data.uploadPhotos]
+            } 
+        })
+        return { success: true, submission: updateSubmission}
+    } catch (error) {
+        console.error("Update error", error)
+        return {success: false, error: "Server error"}
+    }
+}
+
 // Declare a post function to handle post requests 
 export async function sendData(data: {
     projectTitle: string;
@@ -16,11 +43,12 @@ export async function sendData(data: {
         const submission = await prisma.submissions.create({
             data : {
                 id: randomUUID(),
+                status: "draft",
                 name: data.projectTitle,
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
                 ytVideo: data.youtubeLink,
-                images: data.uploadPhotos,
+                images: [data.uploadPhotos],
                 comments: "",
                 rubric: {},
                 score: 0,
