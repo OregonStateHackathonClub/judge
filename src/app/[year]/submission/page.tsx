@@ -23,7 +23,7 @@ export default function Page ({ params }: { params: { year: string } }) {
     watch, 
     register,
     handleSubmit,
-    formState: { errors, isValid } 
+    formState: { errors, isValid }, reset
   } = useForm<SubmissionFormValues>({ mode: "all" })
 
   const saveDraft = async(values: SubmissionFormValues) => {
@@ -31,11 +31,14 @@ export default function Page ({ params }: { params: { year: string } }) {
       const result = await updateData(submissionId, values)
       if (!result.success) {
         window.alert(result.error || "Error saving draft")
+      } else {
+        nextStepForm()
       }
     } else {
       const result = await sendData(values)
       if (result.success) {
         setSubmissionId(result.submission.id)
+        nextStepForm();
       } else {
         window.alert(result.error || "Error saving draft")
       }
@@ -72,7 +75,11 @@ export default function Page ({ params }: { params: { year: string } }) {
       return (  
         <Button
           type="button"
-          onClick={() => {setFormStep(0)}}
+          onClick={() => {
+            setFormStep(0)
+            reset()
+            setSubmissionId(null)
+          }}
         >
             Finish
         </Button>
@@ -90,6 +97,7 @@ export default function Page ({ params }: { params: { year: string } }) {
           <Button
             type="button"
             disabled={!isValid}
+            // NEED TO FIX SO THAT IT DOES NOT SUBMIT A DUPLICATE FORM
             onClick={handleSubmit(submitForm)}
           >
             Submit Project
@@ -143,13 +151,33 @@ export default function Page ({ params }: { params: { year: string } }) {
   }
   // submission
   const submitForm = async (values : SubmissionFormValues): Promise<void> => {
-      const result = await sendData(values)
-
+    if (submissionId) {
+      const result = await updateData(submissionId, {...values, status: "submitted"});
       if (result.success) {
+        nextStepForm()
+      } else {
+        window.alert(result.error || "Error saving submission")
+      }
+    } else {
+      const result = await sendData({ ...values, status: "submitted"})
+      if (result.success) {
+        setSubmissionId(result.submission.id);
         nextStepForm();
       } else {
         window.alert(result.error || "Error saving submission")
       }
+    }
+    // if (!submissionId) {
+    //   window.alert("No draft found to submit. Save the draft first")
+    //   return
+    // }
+    // const result = await updateData(submissionId, {...values, status: "submitted"});
+
+    //   if (result.success) {
+    //     nextStepForm();
+    //   } else {
+    //     window.alert(result.error || "Error saving submission")
+    //   }
   }
 
   return (

@@ -11,6 +11,7 @@ export async function updateData(
     githubLink: string;
     youtubeLink: string
     uploadPhotos: string;
+    status: string;
 }) {
     try {
         const updateSubmission = await prisma.submissions.update({
@@ -20,7 +21,8 @@ export async function updateData(
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
                 ytVideo: data.youtubeLink,
-                images: [data.uploadPhotos]
+                images: data.uploadPhotos ? [data.uploadPhotos] : [],
+                status: data.status
             } 
         })
         return { success: true, submission: updateSubmission}
@@ -37,6 +39,7 @@ export async function sendData(data: {
     githubLink: string;
     youtubeLink: string
     uploadPhotos: string;
+    status: string
 }) {    
     // Read JSON data from the submission form
     try {
@@ -48,7 +51,7 @@ export async function sendData(data: {
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
                 ytVideo: data.youtubeLink,
-                images: [data.uploadPhotos],
+                images: data.uploadPhotos ? [data.uploadPhotos] : [],
                 comments: "",
                 rubric: {},
                 score: 0,
