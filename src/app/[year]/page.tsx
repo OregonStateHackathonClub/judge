@@ -8,8 +8,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-export default function Page({ params }: { params: { year: string } }) {
+// do not do this in production- always add a fallback with suspense or a loading.tsx when using an async component
+export default async function Page(props: { params: Promise<{ year: string }> }) {
   const data = ["thing 1", "thing 2", "thing 3"];
+  const params = await props.params
 
   return (
     <div className="">
