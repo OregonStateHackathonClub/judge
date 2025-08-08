@@ -126,14 +126,15 @@ model UsersToTeams {
 
 model Submissions {
   id          String                @id
-  name        String
-  bio         String
-  githubURL   String
-  ytVideo     String
-  images      String
-  comments    String
-  rubric      Json
-  score       Int
+  status      String                
+  name        String                @default("")
+  bio         String                @default("")
+  githubURL   String                @default("")
+  ytVideo     String                @default("")
+  images      String[]              @default([])
+  comments    String                @default("")
+  rubric      Json                  @default("{}")
+  score       Int                   @default(0)
   hackathonId String
   // relations
   hackathon   Hackathons            @relation(fields: [hackathonId], references: [id])
