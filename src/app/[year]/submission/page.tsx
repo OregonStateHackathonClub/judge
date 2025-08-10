@@ -4,10 +4,10 @@ import React  from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
-  CardAction,
+  //CardAction,
   CardContent,
   CardDescription,
-  CardFooter,
+  //CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -23,9 +23,15 @@ type SubmissionFormValues = {
     githubLink: string;
     youtubeLink: string;
     uploadPhotos: string;
+    status: string;
 }
 
-export default function Page ({ params }: { params: { year: string } }) {
+interface PageProps {
+  params: Promise<{ year: string }>;
+}
+
+export default function Page ({ params }: PageProps ) {
+  console.log("year: %d", params )
   const [ formStep, setFormStep ] = React.useState(0)
   const [ submissionId, setSubmissionId] = React.useState<string | null>(null)
   const { 
@@ -45,7 +51,7 @@ export default function Page ({ params }: { params: { year: string } }) {
       }
     } else { 
       const result = await sendData(values)
-      if (result.success) {
+      if (result.success && result.submission) {
         setSubmissionId(result.submission.id)
         nextStepForm();
       } else {
@@ -169,7 +175,7 @@ export default function Page ({ params }: { params: { year: string } }) {
       }
     } else {
       const result = await sendData({ ...values, status: "submitted"})
-      if (result.success) {
+      if (result.success && result.submission) {
         setSubmissionId(result.submission.id);
         nextStepForm();
       } else {
