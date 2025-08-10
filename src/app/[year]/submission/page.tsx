@@ -2,6 +2,15 @@
 
 import React  from "react"
 import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { useForm } from "react-hook-form"
 import { sendData } from "./action"
 import { updateData } from "./action"
@@ -34,7 +43,7 @@ export default function Page ({ params }: { params: { year: string } }) {
       } else {
         nextStepForm()
       }
-    } else {
+    } else { 
       const result = await sendData(values)
       if (result.success) {
         setSubmissionId(result.submission.id)
@@ -182,6 +191,7 @@ export default function Page ({ params }: { params: { year: string } }) {
 
   return (
     <>
+    <div className="flex justify-between items-start w-full">
     <form>
       <div><p>Step {formStep + 1} of {MAX_STEPS}</p></div>
       {/* Title and Description of project */}
@@ -220,10 +230,6 @@ export default function Page ({ params }: { params: { year: string } }) {
                   value: 5000,
                   message: "Description must be under 5000 characters"
                 },
-                pattern: {
-                  value: /^[a-zA-Z0-9 ]+$/,
-                  message: "Only letters and numbers allowed"
-                }
               })}
             />
           </div>
@@ -292,7 +298,7 @@ export default function Page ({ params }: { params: { year: string } }) {
             <p><strong>Description:</strong> {watch("projectDescription")}</p>
             <p><strong>GitHub:</strong> {watch("githubLink")}</p>
             <p><strong>YouTube:</strong> {watch("youtubeLink")}</p>
-            <p><strong>Photos:</strong> {watch("uploadPhotos")}</p>
+            {/* <p><strong>Photos:</strong> {watch("uploadPhotos")}</p> */}
           </div>
       </section>
       )}
@@ -305,10 +311,27 @@ export default function Page ({ params }: { params: { year: string } }) {
       </section>
       )}
       {renderButton()}
-      <pre>
-        {JSON.stringify(watch(), null, 2)}
-      </pre>
     </form>
+      <Card className="top-4 right-4 w-[350px] h-[300px] shadow-lg z-50">
+        <CardHeader>
+          <CardTitle className="overflow-hidden text-ellipsis whitespace-normal line-clamp-1">
+            {watch("projectTitle") || "Preview Title"}
+          </CardTitle>
+          <CardDescription className="overflow-hidden text-ellipsis whitespace-normal line-clamp-3">
+            {watch("projectDescription") || "Preview description"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+             <img
+                src={
+                    watch("uploadPhotos") || "data:image/png;base64,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"
+                }
+                alt="Project preview"
+                className="w-full h-[150px] object-cover rounded-md"
+              />
+        </CardContent>
+      </Card>
+    </div>
     </>
   )
 }
