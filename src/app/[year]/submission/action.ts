@@ -46,7 +46,7 @@ export async function sendData(data: {
         const submission = await prisma.submissions.create({
             data : {
                 id: randomUUID(),
-                status: "draft",
+                status: data.status,
                 name: data.projectTitle,
                 bio: data.projectDescription,
                 githubURL: data.githubLink,

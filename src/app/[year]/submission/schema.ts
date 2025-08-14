@@ -18,13 +18,14 @@ export const formSchema = z.object({
   mainDescription: z.string().min(3).max(10000,{
     message: "Description should be between 3 and 10000 characters"
   }),
-  github: z.url({ 
-    hostname: /^github\.com$/,
-    message: "Must be a github link"
-  }),
-  youtube: z.url({ 
-    hostname: /^youtube\.com$/, 
-    message: "Must be a youtube link"
+  github: z.string() ,
+  //   hostname: /^github\.com$/,
+  //   message: "Must be a github link"
+  // }),
+  youtube: z.string().trim().refine(
+    val => val === '' || /^https?:\/\/(www\.)?youtube\.com/.test(val), {
+    message: 'Must be a YouTube link',
   }).optional(),
-  photos: z.string()
+  photos: z.string(),
+  status: z.string().optional()
 }); 
