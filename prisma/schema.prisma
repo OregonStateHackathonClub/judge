@@ -126,12 +126,13 @@ model UsersToTeams {
 
 model Submissions {
   id          String                @id
-  status      String                
+  status      String   
+  miniDescription String            @default("")             
   name        String                @default("")
   bio         String                @default("")
   githubURL   String                @default("")
   ytVideo     String                @default("")
-  images      String[]              @default([])
+  images      String                @default("")
   comments    String                @default("")
   rubric      Json                  @default("{}")
   score       Int                   @default(0)
