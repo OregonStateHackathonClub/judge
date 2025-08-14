@@ -8,8 +8,9 @@ const fetchUserWithDelay = () =>
     )
   );
 
-export default function Page({ params }: { params: { year: string } }) {
-	const year = params.year;
+// do not do this in production- always add a fallback with suspense or a loading.tsx when using an async component
+export default async function Page(props: { params: Promise<{ year: string }> }) {
+	const params = await props.params
   const write = async () => {
     "use server";
 
@@ -22,7 +23,7 @@ export default function Page({ params }: { params: { year: string } }) {
       <Suspense fallback={"Loading..."}>
         <PeopleData />
       </Suspense>
-			{year}
+			{params.year}
     </>
   );
 }
