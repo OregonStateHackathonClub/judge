@@ -28,6 +28,7 @@ export function DraftForm() {
   const [ submissionId, setSubmissionId] = React.useState<string | null>(null)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       description: "",
@@ -255,8 +256,19 @@ export function MultiStepViewer({ form, doSthAction, submissionId}: { form: any,
   const steps = Object.keys(stepFormElements).map(Number);
   const { currentStep, isLastStep, goToNext, goToPrevious } = useMultiStepForm({
     initialSteps: steps,
-    onStepValidation: () => {
-      return true;
+    onStepValidation: async() => {
+      const fieldsToValidate =
+      currentStep === 1
+        ? ["name", "description"]
+        : currentStep === 2
+        ? ["mainDescription"]
+        : currentStep === 3
+        ? ["github", "youtube", "photos"]
+        : [];
+
+    const isValid = await form.trigger(fieldsToValidate);
+    return isValid;
+
     },
   });
   const current = stepFormElements[currentStep];
