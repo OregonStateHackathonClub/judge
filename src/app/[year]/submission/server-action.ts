@@ -3,28 +3,31 @@ import { actionClient } from "./safeAction";
 import { formSchema } from "./schema";
 import { sendData, updateData } from './action'
 
-export const serverAction = actionClient.inputSchema(formSchema).action(async ({
+export const serverAction = actionClient.schema(formSchema).action(async ({
   parsedInput
 }) => {
   try {
     const mapData = {
-    projectTitle: parsedInput.name,
-    projectDescription: parsedInput.mainDescription,
-    githubLink: parsedInput.github,
-    youtubeLink: parsedInput.youtube,
-    uploadPhotos: parsedInput.photos,
-    status: "submitted"
+      projectTitle: parsedInput.name,
+      miniDescription: parsedInput.description,
+      projectDescription: parsedInput.mainDescription || "",
+      githubLink: parsedInput.github || "",
+      youtubeLink: parsedInput.youtube || "",
+      uploadPhotos: parsedInput.photos || "",
+      status: "draft"
+    }
+    const result = parsedInput.submissionId
+      ? await updateData(parsedInput.submissionId, mapData)
+      : await sendData(mapData);
+
+    if (!result.success) {
+      return { success: false, error: result.error };
+    }
+
+    return { success: true, submission: result };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "An unknown error occurred";
+    return { success: false, error: message };
   }
-  let submission;
-  if (parsedInput.submissionId) {
-    submission = await updateData(parsedInput.submissionId, mapData)
-  } else {
-    submission = await sendData(mapData);
-  }
-  return { success: true, submission}
-} catch (error) {
-  return { success: false, error: error.message}
-}
-  
 });
 

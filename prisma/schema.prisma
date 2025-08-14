@@ -128,10 +128,11 @@ model Submissions {
   id          String                @id
   status      String                
   name        String                @default("")
+  miniDescription String            @default("")
   bio         String                @default("")
   githubURL   String                @default("")
   ytVideo     String                @default("")
-  images      String[]              @default([])
+  images      String                @default("")
   comments    String                @default("")
   rubric      Json                  @default("{}")
   score       Int                   @default(0)

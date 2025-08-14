@@ -41,13 +41,14 @@ export function DraftForm() {
   const doSthAction = useAction(serverAction, {
     onSuccess: (result) => {
       // TODO: show success message
-      form.reset();
-      if (result.submissionId) {
-        setSubmissionId(result.submissionId)
+      // Only reset on final submit, not every step
+      if (result?.data?.submission?.id) {
+        setSubmissionId(result.data.submission.id);
       }
     },
     onError: () => {
       // TODO: show error message
+      alert("Error updating database: " + error.message)
     },
   });
 
@@ -62,7 +63,12 @@ export function DraftForm() {
           onSubmit={form.handleSubmit((values) => doSthAction.execute({...values, submissionId }))}
           className="flex flex-col p-2 md:p-5 w-full mx-auto rounded-md max-w-3xl gap-2 border"
         >
-          <MultiStepViewer form={form} />
+          <MultiStepViewer 
+          form={form}
+          doSthAction={doSthAction}
+          submissionId={submissionId}
+          setSubmissionId={setSubmissionId} 
+          />
           <div className="flex justify-end items-center w-full pt-3"></div>
         </form>
       </Form>
@@ -73,7 +79,12 @@ export function DraftForm() {
 /**
  * Used to render a multi-step form in preview mode
  */
-export function MultiStepViewer({ form, doSthAction, submissionId}: { form: any, doSthAction: any, submissionId: string | null}) {
+export function MultiStepViewer({ 
+  form, 
+  doSthAction, 
+  submissionId,
+  setSubmissionId
+}: { form: any, doSthAction: any, submissionId: string | null, setSubmissionId: (id: string) => void}) {
   const stepFormElements: {
     [key: number]: JSX.Element;
   } = {
@@ -317,7 +328,20 @@ export function MultiStepViewer({ form, doSthAction, submissionId}: { form: any,
 
               const valid = await form.trigger(fieldsToValidate);
               if (valid) {
-                goToNext();
+                const result = await serverAction({ ...form.getValues(), submissionId });
+                console.log("Submission result: ", result);
+
+                if (result.data?.success) {
+                  if (result.data.submission?.submission?.id) {
+                    setSubmissionId(result.data.submission.submission.id);
+                  }
+                  goToNext();
+                } else {
+                  // Handle server, validation, or custom errors from the action
+                  const errorMessage = result.serverError || JSON.stringify(result.validationErrors) || result.data?.error || "An unknown error occurred.";
+                  console.error("Submission failed:", errorMessage);
+                  alert(`There was an error saving your progress: ${errorMessage}`);
+                }
               }
               // If not valid, errors will show automatically via <FormMessage />
             }}

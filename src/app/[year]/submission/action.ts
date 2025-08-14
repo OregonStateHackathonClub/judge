@@ -7,6 +7,7 @@ export async function updateData(
     submissionId: string,
     data: {
     projectTitle: string;
+    miniDescription: string;
     projectDescription: string;
     githubLink: string;
     youtubeLink: string
@@ -18,23 +19,26 @@ export async function updateData(
             where: { id: submissionId },
             data: {
                 name: data.projectTitle,
+                miniDescription: data.miniDescription,
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
                 ytVideo: data.youtubeLink,
-                images: data.uploadPhotos ? [data.uploadPhotos] : [],
+                images: data.uploadPhotos || "",
                 status: data.status
             } 
         })
         return { success: true, submission: updateSubmission}
     } catch (error) {
         console.error("Update error", error)
-        return {success: false, error: "Server error"}
+        const message = error instanceof Error ? error.message : "Unknown error";
+        return {success: false, error: `Update failed: ${message}` }
     }
 }
 
 // Declare a post function to handle post requests 
 export async function sendData(data: {
     projectTitle: string;
+    miniDescription: string;
     projectDescription: string;
     githubLink: string;
     youtubeLink: string
@@ -48,10 +52,11 @@ export async function sendData(data: {
                 id: randomUUID(),
                 status: data.status,
                 name: data.projectTitle,
+                miniDescription: data.miniDescription,
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
                 ytVideo: data.youtubeLink,
-                images: data.uploadPhotos ? [data.uploadPhotos] : [],
+                images: data.uploadPhotos || "",
                 comments: "",
                 rubric: {},
                 score: 0,
@@ -64,6 +69,7 @@ export async function sendData(data: {
     } catch (error) {
         // Catch an error if anything goes wrong
         console.error("Submission error", error)
-        return {success: false, error: "Server error"}
+        const message = error instanceof Error ? error.message : "Unknown error";
+        return {success: false, error: `Submission failed: ${message}` }
     }
 }
