@@ -14,7 +14,7 @@ export const serverAction = actionClient.schema(formSchema).action(async ({
       githubLink: parsedInput.github || "",
       youtubeLink: parsedInput.youtube || "",
       uploadPhotos: parsedInput.photos || "",
-      status: "draft"
+      status: parsedInput.status || "draft"
     }
     const result = parsedInput.submissionId
       ? await updateData(parsedInput.submissionId, mapData)

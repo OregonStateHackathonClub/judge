@@ -351,7 +351,28 @@ export function MultiStepViewer({
         )}
 
         {isLastStep && (
-          <Button size="sm" type="submit">
+          <Button 
+          size="sm" 
+          type="button"
+          disabled={isSubmitting}
+          onClick={async () => {
+            const valid = await form.trigger()
+            if (valid) {
+              const result = await serverAction({
+                ...form.getValues(),
+                submissionId,
+                status: "submitted",
+              })
+              if (result.data?.success) {
+                alert("Project submitted successfully.")
+              } else {
+                const errorMessage = result.serverError || JSON.stringify(result.validationErrors) || result.data?.error || "An unknown error occurred.";
+                console.error("Submission failed:", errorMessage);
+                alert(`There was an error submitting your project: ${errorMessage}`);
+              }
+            }
+          }}
+          >
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         )}
