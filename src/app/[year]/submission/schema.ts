@@ -1,6 +1,6 @@
 import * as z from "zod"
 
-export interface ActionResponse < T = any > {
+export interface ActionResponse < T = z.infer<typeof formSchema> > {
   success: boolean
   message: string
   errors ? : {
@@ -19,13 +19,14 @@ export const formSchema = z.object({
   mainDescription: z.string().max(10000,{
     message: "Description should be between 3 and 10000 characters"
   }).optional(),
-  github: z.string().url({
+  github: z.url({
+    hostname: /^github\.com$/,
      message: "Must be a valid Github link"
-  }).or(z.literal("")).optional(),
+  }).or(z.literal("")),
   youtube: z.string().trim().refine(
     val => val === '' || /^https?:\/\/(www\.)?youtube\.com/.test(val), {
     message: 'Must be a YouTube link',
   }).optional(),
-  photos: z.string().optional(),
+  photos: z.string(),
   status: z.string().optional()
 }); 
