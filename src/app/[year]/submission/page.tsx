@@ -16,6 +16,16 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
+import {
+  Card,
+  //CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -256,10 +266,18 @@ export function MultiStepViewer({
         <p className="text-base">
           Please review the information below to ensure everything is correct:
         </p>
-        <h3 className="text-xl font-bold">Title: </h3>
-        <h3 className="text-xl font-bold">Main Description:</h3>
-        <h3 className="text-xl font-bold">GitHub: </h3>
-        <h3 className="text-xl font-bold">YouTube:</h3>
+        <div className="mt-4 space-y-2">
+          <h3 className="text-xl font-bold">Title: </h3>
+          <p>{form.getValues().name}</p>
+          <h3 className="text-xl font-bold">Mini-Description:</h3>
+          <p>{form.getValues().description}</p>
+          <h3 className="text-xl font-bold">Main Description:</h3>
+          <p>{form.getValues().mainDescription}</p>
+          <h3 className="text-xl font-bold">GitHub: </h3>
+          <p>{form.getValues().github}</p>
+          <h3 className="text-xl font-bold">YouTube:</h3>
+          <p>{form.getValues().youtube}</p>
+        </div>
       </div>
     ),
   };
@@ -376,6 +394,35 @@ export function MultiStepViewer({
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         )}
+      </div>
+      <div className=" w-[400px] h-[400px]">
+        <Card className="flex flex-col justify-between cursor-pointer hover:shadow-md transition-shadow overflow-hidden shadow-lg z-50 pt-0">
+          <img
+            src={form.watch("photos") || "/beaver.png"}
+            alt={`${form.watch("name")} image`}
+            className="h-48 w-full object-cover border-b"
+          />
+          <CardHeader className="w-full h-full">
+
+            <CardTitle>{form.watch("name") || "Title Preview"}</CardTitle>
+            
+            {/* Display track names FIX THIS FOR PREVIEW */}
+            {/* <div className="flex flex-wrap gap-1 mt-1 mb-4">
+              {submission.trackLinks.map((link: any) => (
+                <Badge
+                  variant="secondary"
+                  key={link.trackId}
+                  className="bg-blue-100 text-blue-500"
+                >
+                  {link.track.name}
+                </Badge>
+              ))}
+            </div> */}
+            <CardDescription className="overflow-hidden text-ellipsis whitespace-normal line-clamp-3">
+              {form.watch("description") || "Description Preview"}
+            </CardDescription>
+          </CardHeader>
+        </Card>
       </div>
     </div>
   );
