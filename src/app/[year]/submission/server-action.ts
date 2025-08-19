@@ -3,7 +3,7 @@ import { actionClient } from "./safeAction";
 import { formSchema } from "./schema";
 import { sendData, updateData } from './action'
 
-export const serverAction = actionClient.schema(formSchema).action(async ({
+export const serverAction = actionClient.inputSchema(formSchema).action(async ({
   parsedInput
 }) => {
   try {

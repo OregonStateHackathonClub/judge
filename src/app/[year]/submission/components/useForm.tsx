@@ -2,13 +2,13 @@
 import { useState } from "react";
 //------------------------------use-multi-step-form.tsx
 type UseFormStepsProps = {
-  initialSteps: any[];
-  onStepValidation ? : (step: any) => Promise < boolean > | boolean;
+  initialSteps: number[];
+  onStepValidation ? : (step: number) => Promise < boolean > | boolean;
 };
 export type UseMultiFormStepsReturn = {
-  steps: any[];
+  steps: number[];
   currentStep: number;
-  currentStepData: any;
+  // currentStepData: any;
   progress: number;
   isFirstStep: boolean;
   isLastStep: boolean;
@@ -43,7 +43,7 @@ export function useMultiStepForm({
   return {
     steps,
     currentStep,
-    currentStepData: steps[currentStep - 1],
+    // currentStepData: steps[currentStep - 1],
     progress: (currentStep / steps.length) * 100,
     isFirstStep: currentStep === 1,
     isLastStep: currentStep === steps.length,
