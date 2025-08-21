@@ -4,11 +4,11 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import * as z from "zod";
-import { formSchema } from "@/schema";
+import { formSchema } from "../schema";
 
 type FormType = UseFormReturn<z.infer<typeof formSchema>>
 
-export default function StepOne({ form }: { form: UseFormReturn<FormType>}) {
+export default function StepOne({ form }: { form: FormType}) {
     return (
       <div>
         <h1 className="text-xl font-bold text-zinc-800">Project Title & Mini-Description</h1>

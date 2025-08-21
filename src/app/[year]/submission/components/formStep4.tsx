@@ -1,10 +1,10 @@
 import { UseFormReturn } from "react-hook-form";
 import * as z from "zod";
-import { formSchema } from "@/schema";
+import { formSchema } from "../schema";
 
 type FormType = UseFormReturn<z.infer<typeof formSchema>>
 
-export default function StepFour({ form }: { form: UseFormReturn<FormType>}) {
+export default function StepFour({ form }: { form: FormType}) {
     return (
         <div>
         <h1 className="text-3xl font-bold">Project Review</h1>

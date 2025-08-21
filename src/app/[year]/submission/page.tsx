@@ -4,7 +4,7 @@ import { formSchema } from "./schema";
 import { serverAction } from "./server-action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button"
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useForm, type UseFormReturn } from "react-hook-form";
 import { useAction } from "next-safe-action/hooks";
 import {
@@ -115,7 +115,8 @@ export function DraftForm() {
   );
 }
 
-type FormType = UseFormReturn<z.infer<typeof formSchema>>
+type FormValues = z.infer<typeof formSchema>
+type FormType = UseFormReturn<FormValues>
 
 export function MultiStepViewer({
   form,
@@ -135,7 +136,7 @@ export function MultiStepViewer({
     4: <StepFour form={form} />,
   };
 
-  function fieldsToValidate(currentStep): ("name" | "submissionId" | "description" | "mainDescription" | "github" | "youtube" | "photos" | "status")[]{ 
+  function fieldsToValidate(currentStep: number): ("name" | "submissionId" | "description" | "mainDescription" | "github" | "youtube" | "photos" | "status")[]{ 
     return currentStep === 1
       ? ["name", "description"]
       : currentStep === 2
@@ -160,6 +161,44 @@ export function MultiStepViewer({
   const {
     formState: { isSubmitting },
   } = form;
+
+  const autosaveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const autosaveDraft = useCallback((fieldName: keyof FormValues, delay: number = 500) => {
+    if (autosaveTimeoutRef.current) {
+      clearTimeout(autosaveTimeoutRef.current);
+    }
+
+    autosaveTimeoutRef.current = setTimeout(async () => {
+      const valid = await form.trigger(fieldName);
+      if (valid){
+        const result = await serverAction({ ...form.getValues(), submissionId });
+        console.log("Submission result: ", result);
+        if (result.data?.success) {
+          if (result.data.submission?.submission?.id) {
+            setSubmissionId(result.data.submission.submission.id);
+            setLastSaved(new Date());
+          }
+        } else {
+          const errorMessage = result.serverError || JSON.stringify(result.validationErrors) || result.data?.error || "An unknown error occurred.";
+          console.error("Submission failed:", errorMessage);
+          alert(`There was an error saving your progress: ${errorMessage}`);
+        }
+      }
+    }, delay);
+  }, [form, setSubmissionId, submissionId]);
+
+  useEffect(() => {
+    const subscription = form.watch((_, info) => {
+      const fieldName = info?.name
+      if(!fieldName) return;
+
+      autosaveDraft(fieldName);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form, autosaveDraft]); 
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-col items-center justify-start mb-4">
@@ -210,7 +249,7 @@ export function MultiStepViewer({
             Previous
           </Button>}
           <div className="font-thin opacity-65 ml-auto">
-            Last Saved: {lastSaved ? lastSaved.toLocaleString() : '—'}
+            Last Saved: {lastSaved ? lastSaved.toLocaleTimeString() : '—'}
           </div>
         {!isLastStep && (
           <Button

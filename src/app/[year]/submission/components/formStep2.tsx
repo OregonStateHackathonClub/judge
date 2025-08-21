@@ -3,11 +3,11 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import * as z from "zod";
-import { formSchema } from "@/schema";
+import { formSchema } from "../schema";
 
 type FormType = UseFormReturn<z.infer<typeof formSchema>>
 
-export default function StepTwo({ form }: { form: UseFormReturn<FormType>}) {
+export default function StepTwo({ form }: { form: FormType}) {
     return (
         <div>
         {" "}

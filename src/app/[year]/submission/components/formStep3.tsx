@@ -3,11 +3,11 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { UseFormReturn } from "react-hook-form";
 import * as z from "zod";
-import { formSchema } from "@/schema";
+import { formSchema } from "../schema";
 
 type FormType = UseFormReturn<z.infer<typeof formSchema>>
 
-export default function StepThree({ form }: { form: UseFormReturn<FormType>}) {
+export default function StepThree({ form }: { form: FormType}) {
     return (
         <div>
         <h1 className="text-3xl font-bold">Project Info</h1>

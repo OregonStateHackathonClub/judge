@@ -12,10 +12,10 @@ export const formSchema = z.object({
   submissionId: z.string().optional().nullable(),
   name: z.string().min(1).max(50,{
     message: "Title should be between 3 and 50 characters"
-  }),
+  }).or(z.literal("")),
   description: z.string().min(1).max(250,{
     message: "Description should be between 3 and 250 characters"
-  }),
+  }).or(z.literal("")),
   mainDescription: z.string().max(10000,{
     message: "Description should be between 3 and 10000 characters"
   }).optional(),
