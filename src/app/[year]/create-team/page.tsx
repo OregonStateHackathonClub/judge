@@ -20,6 +20,11 @@ import {
 } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 
+import { createTeam } from "@/app/actions"
+import { Prisma, PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient({})
+
 
 
 const formSchema = z.object({
@@ -41,6 +46,17 @@ export default function Home() {
   // TODO: submit
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values)
+    let data = {
+      teamId: values.teamName, //TEMP
+      name: values.teamName,
+      lookingForTeammates: values.lft,
+      description: values.description,
+      hackathon: {
+        connect: { id: "234" } //TEMP
+      }
+    }
+    createTeam(data)
+    
   }
 
   function updateLFT(lft: boolean) {
