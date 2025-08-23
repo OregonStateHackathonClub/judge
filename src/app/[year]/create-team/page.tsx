@@ -22,6 +22,8 @@ import { useForm } from "react-hook-form"
 
 import { createTeam } from "@/app/actions"
 import { Prisma, PrismaClient } from "@prisma/client";
+import { useRouter } from "next/router"
+import React from "react"
 
 const prisma = new PrismaClient({})
 
@@ -34,7 +36,9 @@ const formSchema = z.object({
   description: z.string().optional(),
 })
 
-export default function Home() {
+export default function Home({params}:{
+  params: Promise<{ year: string }>;
+}) {
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,16 +47,17 @@ export default function Home() {
     },
   })
   
-  // TODO: submit
   function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values)
+
+    const year = React.use(params).year
+
     let data = {
-      teamId: values.teamName, //TEMP
       name: values.teamName,
       lookingForTeammates: values.lft,
       description: values.description,
       hackathon: {
-        connect: { id: "234" } //TEMP
+        connect: { id: year } //TEMP
       }
     }
     createTeam(data)
