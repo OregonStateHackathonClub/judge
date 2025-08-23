@@ -120,3 +120,34 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .markdown-preview h1 {
+    @apply text-3xl font-bold mt-6 mb-4;
+  }
+  .markdown-preview h2 {
+    @apply text-2xl font-semibold mt-5 mb-3;
+  }
+  .markdown-preview p {
+    @apply mb-4 leading-relaxed;
+  }
+  .markdown-preview ul {
+    @apply list-disc pl-6 mb-4;
+  }
+  .markdown-preview ol {
+    @apply list-decimal pl-6 mb-4;
+  }
+  .markdown-preview table {
+    @apply w-full border-collapse my-4;
+  }
+  .markdown-preview th,
+  .markdown-preview td {
+    @apply border border-gray-300 px-3 py-2 text-left;
+  }
+  .markdown-preview blockquote {
+    @apply border-l-4 border-gray-300 pl-4 text-gray-600 italic my-4;
+  }
+  .markdown-preview code {
+    @apply bg-gray-100 px-1 py-0.5 rounded font-mono;
+  }
+}
