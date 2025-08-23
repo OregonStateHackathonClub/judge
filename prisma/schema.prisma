@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Users {
-  id            String         @id
+  id            String         @id @default(cuid())
   name          String
   email         String
   emailVerified Boolean
@@ -37,7 +37,7 @@ model UserProfiles {
 }
 
 model Sessions {
-  id        String   @id
+  id        String   @id @default(cuid())
   expiresAt DateTime
   token     String
   createdAt DateTime
@@ -52,7 +52,7 @@ model Sessions {
 }
 
 model Accounts {
-  id                    String    @id
+  id                    String    @id @default(cuid())
   accountId             String
   providerId            String
   userId                String
@@ -72,7 +72,7 @@ model Accounts {
 }
 
 model Verifications {
-  id         String    @id
+  id         String    @id @default(cuid())
   identifier String
   value      String
   expiresAt  DateTime
@@ -83,7 +83,7 @@ model Verifications {
 }
 
 model Hackathons {
-  id          String        @id
+  id          String        @id @default(cuid())
   name        String        @unique
   year        String
   sponsors    String
@@ -97,7 +97,7 @@ model Hackathons {
 }
 
 model Teams {
-  teamId       String         @id
+  teamId       String         @id @default(cuid())
   name         String
   lookingForTeammates Boolean @default(false)
   description  String?
@@ -125,7 +125,7 @@ model UsersToTeams {
 }
 
 model Submissions {
-  id          String                @id
+  id          String                @id @default(cuid())
   status      String   
   miniDescription String            @default("")             
   name        String                @default("")
@@ -146,7 +146,7 @@ model Submissions {
 }
 
 model Tracks {
-  id          String                @id
+  id          String                @id @default(cuid())
   name        String
   description String
   hackathonId String
