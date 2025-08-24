@@ -68,14 +68,14 @@ export default async function Page({params}: { params: Promise<{ year: string, t
             <div key={ut.userId}>{ut.user.name}</div>
           ))}
         </div>
-        { data?.description &&
+        { data?.contact &&
           <>
             <div className="text-2xl pt-5">
               Contact:
             </div>
             <div className="pt-1">
-              <Link href={`mailto:${data?.description}`} className="text-blue-700 underline">
-                {data?.description}
+              <Link href={`mailto:${data?.contact}`} className="text-blue-700 underline">
+                {data?.contact}
               </Link>
             </div>
           </>
