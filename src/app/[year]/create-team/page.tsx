@@ -36,6 +36,7 @@ const formSchema = z.object({
   description: z.string().optional(),
 })
 
+// do not do this in production- always add a fallback with suspense or a loading.tsx when using an async component
 export default function Home({params}:{
   params: Promise<{ year: string }>;
 }) {

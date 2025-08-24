@@ -2,10 +2,9 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Suspense } from "react";
 import { PrismaClient } from "@prisma/client";
+import Link from "next/link";
 
-// TODO: Add filter: only teams who are looking for teammates should show up
-// Also add team description and link to their page
-// Requires primsa changes
+// TODO: Add filter: add team description
 async function Teams() {
   const data = await GetTeams();
 
@@ -13,7 +12,9 @@ async function Teams() {
     <ul className="pb-2.5">
       {
         data.map( (team, index) => (
-          <li key={team.teamId} className="pl-10 pt-2.5 pb-2.5 hover:bg-gray-100">{team.name}</li>
+          <Link key={team.teamId} href={`join-team/${team.teamId}`}>
+            <li className="pl-10 pt-2.5 pb-2.5 hover:bg-gray-100">{team.name}</li>
+          </Link>
       ))}
     </ul>
   )
@@ -21,7 +22,7 @@ async function Teams() {
 
 async function GetTeams() {
   const prisma = new PrismaClient({})
-  const teams = await prisma.teams.findMany()
+  const teams = await prisma.teams.findMany({where:{lookingForTeammates:true}})
   return teams;
 }
 
