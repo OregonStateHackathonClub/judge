@@ -8,8 +8,51 @@ import { formSchema } from "../schema";
 import ReactMarkdown from "react-markdown"
 import remarkGfm from 'remark-gfm'
 import { Button } from "@/components/ui/button";
+//import Link from "next/link";
 
 type FormType = UseFormReturn<z.infer<typeof formSchema>>
+
+// const components: Components = {
+//     a: (props) => {
+//         const href = props.href;
+//         const allowedURLS = ["localhost:3000", "OUR URL (vercel should autofill into some env var)"];
+//         if (!href) return;
+//         if (href.startsWith("#")) {
+//             return <a {...props} />;
+//         }
+//         const u = URL.parse(href);
+
+//         if (
+//             u &&
+//             allowedURLS.includes(u.host) &&
+//             ["http:", "https:"].includes(u.protocol)
+//         ) {
+         
+
+//             return <Link href={u.pathname} {...props} />;
+//         }
+
+//         return <a target="_blank" {...props} />;
+//     },
+//     img: (props) => {
+//         const src = props.src;
+//         if (!src) return;
+//         const u = URL.parse(src);
+//         const allowedURLS = ["localhost:3000", "OUR URL (vercel should autofill into some env var)", "i.imgur.com"];
+
+//         if (
+//             u &&
+//             allowedURLS.includes(u.host) &&
+//             ["http:", "https:"].includes(u.protocol)
+//         ) {
+//             return (
+//                 <a href={src} target="_blank">
+//                     <img {...props} className="rounded-xl !my-2" />
+//                 </a>
+//             );
+//         }
+//     },
+// };
 
 export default function StepTwo({ form }: { form: FormType}) {
     const [ showPreview, setShowPreview ] = useState(false)
