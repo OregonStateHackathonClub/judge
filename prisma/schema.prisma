@@ -102,6 +102,7 @@ model Teams {
   lookingForTeammates Boolean @default(false)
   description  String?
   leaderId     String?
+  contact      String?
   submissionId String?
   hackathonId  String
   //relations
