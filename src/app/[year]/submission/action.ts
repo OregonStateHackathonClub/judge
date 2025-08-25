@@ -23,7 +23,7 @@ export async function updateData(
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
                 ytVideo: data.youtubeLink,
-                images: data.uploadPhotos || "",
+                images: data.uploadPhotos ? [data.uploadPhotos] : [],
                 status: data.status
             } 
         })
@@ -56,7 +56,7 @@ export async function sendData(data: {
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
                 ytVideo: data.youtubeLink,
-                images: data.uploadPhotos || "",
+                images: data.uploadPhotos ? [data.uploadPhotos] : [],
                 comments: "",
                 rubric: {},
                 score: 0,
