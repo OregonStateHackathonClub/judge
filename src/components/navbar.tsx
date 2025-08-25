@@ -15,6 +15,7 @@ export const Navbar = () => {
       </Link>
       
       <Link href='/Login' className='flex items-center px-5 hover:bg-gray-200'>Login</Link>
+      <Link href='/SignUp' className='flex items-center px-5 hover:bg-gray-200'>Sign Up</Link>
     </div>
   )
 }
