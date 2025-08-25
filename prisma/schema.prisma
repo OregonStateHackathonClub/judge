@@ -8,7 +8,7 @@ datasource db {
 }
 
 model Users {
-  id            String         @id
+  id            String     @id @default(cuid())
   name          String
   email         String
   emailVerified Boolean
@@ -17,27 +17,24 @@ model Users {
   updatedAt     DateTime
   sessions      Sessions[]
   accounts      Accounts[]
-  teams         UsersToTeams[]
-  profiles      UserProfiles[]
+
+  judgeProfile JudgeProfile?
 
   @@unique([email])
   @@map("user")
 }
 
-model UserProfiles {
-  id     String @id @default(cuid())
-  userId String
-  appId  String
+model JudgeProfile {
+  userId String @id
+  user   Users  @relation(fields: [userId], references: [id])
 
-  // other app specific data
+  teams UsersToTeams[]
 
-  user Users @relation(fields: [userId], references: [id])
-
-  @@unique([userId, appId])
+  @@map("judgeProfile")
 }
 
 model Sessions {
-  id        String   @id
+  id        String   @id @default(cuid())
   expiresAt DateTime
   token     String
   createdAt DateTime
@@ -52,7 +49,7 @@ model Sessions {
 }
 
 model Accounts {
-  id                    String    @id
+  id                    String    @id @default(cuid())
   accountId             String
   providerId            String
   userId                String
@@ -72,7 +69,7 @@ model Accounts {
 }
 
 model Verifications {
-  id         String    @id
+  id         String    @id @default(cuid())
   identifier String
   value      String
   expiresAt  DateTime
@@ -83,7 +80,7 @@ model Verifications {
 }
 
 model Hackathons {
-  id          String        @id
+  id          String        @id @default(cuid())
   name        String        @unique
   year        String
   sponsors    String
@@ -97,56 +94,59 @@ model Hackathons {
 }
 
 model Teams {
-  teamId       String         @id
-  name         String
+  teamId              String  @id @default(cuid())
+  name                String
   lookingForTeammates Boolean @default(false)
-  description  String?
-  leaderId     String?
-  submissionId String?
-  hackathonId  String
+  description         String?
+  leaderId            String?
+  contact             String?
+  submissionId        String?
+  hackathonId         String
+
   //relations
-  leader       Accounts?       @relation(fields: [leaderId], references: [id])
-  submission   Submissions?   @relation(fields: [submissionId], references: [id])
-  hackathon    Hackathons     @relation(fields: [hackathonId], references: [id])
-  users        UsersToTeams[]
+  leader     Accounts?      @relation(fields: [leaderId], references: [id])
+  submission Submissions?   @relation(fields: [submissionId], references: [id])
+  hackathon  Hackathons     @relation(fields: [hackathonId], references: [id])
+  users      UsersToTeams[]
 
   @@map("teams")
 }
 
 model UsersToTeams {
-  teamId String
-  userId String
+  teamId         String
+  judgeProfileId String
   // relations
-  team   Teams  @relation(fields: [teamId], references: [teamId])
-  user   Users  @relation(fields: [userId], references: [id])
+  team           Teams        @relation(fields: [teamId], references: [teamId])
+  judgeProfile   JudgeProfile @relation(fields: [judgeProfileId], references: [userId])
 
-  @@id([teamId, userId])
+  @@id([teamId, judgeProfileId])
   @@map("userToTeams")
 }
 
 model Submissions {
-  id          String                @id
-  status      String                
-  name        String                @default("")
-  miniDescription String            @default("")
-  bio         String                @default("")
-  githubURL   String                @default("")
-  ytVideo     String                @default("")
-  images      String                @default("")
-  comments    String                @default("")
-  rubric      Json                  @default("{}")
-  score       Int                   @default(0)
-  hackathonId String
+  id              String   @id @default(cuid())
+  status          String
+  name            String   @default("")
+  miniDescription String   @default("")
+  bio             String   @default("")
+  githubURL       String   @default("")
+  ytVideo         String   @default("")
+  images          String[] @default([])
+  comments        String   @default("")
+  rubric          Json     @default("{}")
+  score           Int      @default(0)
+  hackathonId     String
+
   // relations
-  hackathon   Hackathons            @relation(fields: [hackathonId], references: [id])
-  trackLinks  TracksToSubmissions[]
-  Team        Teams[]
+  hackathon  Hackathons            @relation(fields: [hackathonId], references: [id])
+  trackLinks TracksToSubmissions[]
+  Team       Teams[]
 
   @@map("submissions")
 }
 
 model Tracks {
-  id          String                @id
+  id          String                @id @default(cuid())
   name        String
   description String
   hackathonId String
