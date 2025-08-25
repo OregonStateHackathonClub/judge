@@ -15,8 +15,8 @@ model User {
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
-  sessions      Sessions[]
-  accounts      Accounts[]
+  sessions      Session[]
+  accounts      Account[]
 
   judgeProfile JudgeProfile?
 
@@ -33,7 +33,7 @@ model JudgeProfile {
   @@map("judgeProfile")
 }
 
-model Sessions {
+model Session {
   id        String   @id @default(cuid())
   expiresAt DateTime
   token     String
@@ -48,7 +48,7 @@ model Sessions {
   @@map("session")
 }
 
-model Accounts {
+model Account {
   id                    String    @id @default(cuid())
   accountId             String
   providerId            String
@@ -68,7 +68,7 @@ model Accounts {
   @@map("account")
 }
 
-model Verifications {
+model Verification {
   id         String    @id @default(cuid())
   identifier String
   value      String
@@ -104,7 +104,7 @@ model Teams {
   hackathonId         String
 
   //relations
-  leader     Accounts?      @relation(fields: [leaderId], references: [id])
+  leader     Account?      @relation(fields: [leaderId], references: [id])
   submission Submissions?   @relation(fields: [submissionId], references: [id])
   hackathon  Hackathons     @relation(fields: [hackathonId], references: [id])
   users      UsersToTeams[]
