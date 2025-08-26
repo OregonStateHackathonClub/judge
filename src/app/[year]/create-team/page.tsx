@@ -22,7 +22,7 @@ import { useForm } from "react-hook-form"
 
 import { createTeam } from "@/app/actions"
 import { Prisma, PrismaClient } from "@prisma/client";
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 import React from "react"
 
 const prisma = new PrismaClient({})
@@ -40,6 +40,10 @@ const formSchema = z.object({
 export default function Home({params}:{
   params: Promise<{ year: string }>;
 }) {
+
+  const year = React.use(params).year
+
+  const router = useRouter()
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,20 +52,24 @@ export default function Home({params}:{
     },
   })
   
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values)
-
-    const year = React.use(params).year
 
     let data = {
       name: values.teamName,
       lookingForTeammates: values.lft,
       description: values.description,
+      contact: values.email,
       hackathon: {
         connect: { id: year } //TEMP
       }
     }
-    createTeam(data)
+    let team = await createTeam(data)
+    if (!team) {
+      // Cope with failure
+    } else {
+      router.push(`/${year}/${team.teamId}`)
+    }
     
   }
 
@@ -128,9 +136,9 @@ export default function Home({params}:{
             name="email"
             render={({ field }) => (
               <FormItem className="pl-10 lft-component hidden">
-                <FormLabel>Contact Email</FormLabel>
+                <FormLabel>Contact</FormLabel>
                 <FormControl>
-                  <Input placeholder="benny@beaverhacks.com" {...field} />
+                  <Input placeholder="Email: benny@beaverhacks.com" {...field} value={field.value || ""} />
                 </FormControl>
               </FormItem>
             )}
@@ -143,13 +151,13 @@ export default function Home({params}:{
               <FormItem className="pl-10 lft-component hidden">
                 <FormLabel>Brief Project Description</FormLabel>
                 <FormControl>
-                  <Textarea placeholder="Prospective teammates should know..." {...field} />
+                  <Textarea placeholder="Prospective teammates should know..." {...field} value={field.value || ""} />
                 </FormControl>
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="bg-green-500 hover:bg-green-600 rounded-4xl">Accept Team</Button>
+          <Button type="submit" className="bg-green-500 hover:bg-green-600 rounded-4xl">Create Team</Button>
         </form>
       </Form>
     </div>

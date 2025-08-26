@@ -25,5 +25,6 @@ export async function createTeam(teamData: Prisma.TeamsCreateInput) {
         return newTeam
     } catch (error) {
         console.error(error)
+        return false
     }
 }

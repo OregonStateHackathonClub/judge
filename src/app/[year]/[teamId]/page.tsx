@@ -28,7 +28,6 @@ export default async function Page({params}: { params: Promise<{ year: string, t
   }
 
   // TODO: Team Not Found Page
-  // TODO: Team Contact Info
   async function TeamData() {
     const data = await GetTeamData();
     if (data == null) {
@@ -74,9 +73,7 @@ export default async function Page({params}: { params: Promise<{ year: string, t
               Contact:
             </div>
             <div className="pt-1">
-              <Link href={`mailto:${data?.contact}`} className="text-blue-700 underline">
-                {data?.contact}
-              </Link>
+              {data?.contact}
             </div>
           </>
         }
