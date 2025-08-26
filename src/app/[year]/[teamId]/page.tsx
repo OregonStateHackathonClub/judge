@@ -14,9 +14,13 @@ export default async function Page({params}: { params: Promise<{ year: string, t
       include: {
         users: {
           include: {
-            user: {
-              select: {
-                name: true,
+            judgeProfile: {
+              include: {
+                user: {
+                  select: {
+                    name: true,
+                  },
+                },
               },
             },
           },
@@ -64,7 +68,7 @@ export default async function Page({params}: { params: Promise<{ year: string, t
         </div>
         <div className="pt-1">
           {data?.users.map(ut => (
-            <div key={ut.userId}>{ut.user.name}</div>
+            <div key={ut.judgeProfileId}>{ut.judgeProfile.user.name}</div>
           ))}
         </div>
         { data?.contact &&

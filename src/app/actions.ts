@@ -4,9 +4,9 @@ import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({})
 
-export async function createUser(userData: Prisma.UsersCreateInput) {
+export async function createUser(userData: Prisma.JudgeProfileCreateInput) {
     try {
-        const newUser = await prisma.users.create({
+        const newUser = await prisma.judgeProfile.create({
             data: userData,
         })
 
