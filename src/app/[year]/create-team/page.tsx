@@ -122,7 +122,7 @@ export default function Home({params}:{
                 <FormControl>
                   <Checkbox
                     checked={field.value}
-                    onCheckedChange={(checked) => {
+                    onCheckedChange={(checked : boolean | "indeterminate") => {
                       field.onChange(checked);
                       updateLFT(Boolean(checked));
                     }}

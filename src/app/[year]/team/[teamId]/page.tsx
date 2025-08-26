@@ -23,5 +23,9 @@ export default async function Page({ params }: { params: { year: string; teamId:
     },
   });
 
+  if (!team) {
+    return <div>Team Does Not Exist</div>
+  }
+
   return <TeamPageClient team={team} />;
 }

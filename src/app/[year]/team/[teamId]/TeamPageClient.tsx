@@ -22,6 +22,7 @@ import { useForm } from "react-hook-form"
 import React, { useEffect, useState } from "react"
 import { updateTeam } from "@/app/actions";
 import { Prisma } from "@prisma/client";
+import { authClient } from "@/lib/authClient";
 
 const formSchema = z.object({
     teamName: z.string().min(4, {message: "Username must be at least 4 characters.",}),
@@ -30,10 +31,33 @@ const formSchema = z.object({
     description: z.string().min(0).optional(),
   })
 
-export default function TeamPageClient({ team }: { team : any }) {
+type TeamWithUsers = Prisma.TeamsGetPayload<{
+  include: {
+    users: {
+      include: {
+        judgeProfile: {
+          include: {
+            user: {
+              select: { name: true };
+            };
+          };
+        };
+      };
+    };
+  };
+}>;
+
+export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
     const [editing, setEditing,] = useState(false);
     const [currTeam, setCurrTeam] = useState(team);
-    
+
+    const {
+        data: session,
+    } = authClient.useSession();
+
+    const isTeamMember = currTeam.users.some(
+      (ut) => ut.judgeProfile.userId === session?.user.id
+    );
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
@@ -46,8 +70,8 @@ export default function TeamPageClient({ team }: { team : any }) {
         if (currTeam) {
           form.reset({
             teamName: currTeam.name,
-            contact: currTeam.contact,
-            description: currTeam.description,
+            contact: currTeam.contact ?? undefined,
+            description: currTeam.description ?? undefined,
           });
         }
       }, [team, form]);
@@ -104,14 +128,16 @@ export default function TeamPageClient({ team }: { team : any }) {
             )}
           </div>
 
-          <div className="ml-auto mt-10">
-            <Button
-              className="w-20 h-15 bg-gray-200 hover:bg-gray-300 text-black text-2xl rounded-2xl"
-              onClick={() => setEditing(true)}
-            >
-              Edit
-            </Button>
-          </div>
+          { isTeamMember &&
+            <div className="ml-auto mt-10">
+              <Button
+                className="w-20 h-15 bg-gray-200 hover:bg-gray-300 text-black text-2xl rounded-2xl"
+                onClick={() => setEditing(true)}
+              >
+                Edit
+              </Button>
+            </div>
+          }
         </div>
       ) : (
         <div className="mt-10">
@@ -142,7 +168,7 @@ export default function TeamPageClient({ team }: { team : any }) {
                         <FormControl>
                         <Checkbox
                             checked={field.value}
-                            onCheckedChange={(checked) => {
+                            onCheckedChange={(checked : boolean | "indeterminate") => {
                             field.onChange(checked);
                             // updateLFT(Boolean(checked));
                             }}
@@ -188,9 +214,9 @@ export default function TeamPageClient({ team }: { team : any }) {
                     onClick={() => {
                         setEditing(false);
                         form.reset({
-                            teamName: team.name,
-                            contact: team.contact,
-                            description: team.description,
+                            teamName: currTeam.name,
+                            contact: currTeam.contact ?? undefined,
+                            description: currTeam.description ?? undefined,
                         });
                     }}
                     className="ml-4 bg-gray-200 hover:bg-gray-300 text-black rounded-4xl"

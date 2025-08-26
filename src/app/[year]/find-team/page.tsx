@@ -10,7 +10,7 @@ async function Teams() {
     <ul className="pb-2.5">
       {
         data.map( (team, index) => (
-          <Link key={team.teamId} href={`${team.teamId}`}>
+          <Link key={team.teamId} href={`team/${team.teamId}`}>
             <li className="pl-10 pt-2.5 pb-2.5 hover:bg-gray-100">{team.name}</li>
           </Link>
       ))}
