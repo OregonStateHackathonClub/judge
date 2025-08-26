@@ -28,3 +28,7 @@ export async function createTeam(teamData: Prisma.TeamsCreateInput) {
         return false
     }
 }
+
+export async function getHackathon(year: string) {
+    return await prisma.hackathons.findFirst({where:{year: year}})
+}

@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 
-import { createTeam } from "@/app/actions"
+import { createTeam, getHackathon } from "@/app/actions"
 import { Prisma, PrismaClient } from "@prisma/client";
 import { useRouter } from "next/navigation"
 import React from "react"
@@ -52,8 +52,16 @@ export default function Home({params}:{
     },
   })
   
+
+  // TODO: hackathon must be unique. must get the id somehow
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values)
+
+    let hackathon = await getHackathon(year)
+    if (hackathon == null) {
+      // Cope with failure
+      return false
+    }
 
     let data = {
       name: values.teamName,
@@ -61,7 +69,7 @@ export default function Home({params}:{
       description: values.description,
       contact: values.email,
       hackathon: {
-        connect: { id: year } //TEMP
+        connect: { id: hackathon.id } //TEMP
       }
     }
     let team = await createTeam(data)
