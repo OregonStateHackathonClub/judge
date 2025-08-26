@@ -97,7 +97,7 @@ export function SignUpForm() {
 					</div>
 					<Button
 						type="submit"
-						className="bg-orange-500 w-full"
+						className="bg-orange-500 hover:bg-orange-300 w-full"
 						disabled={loading}
 						onClick={async () => {
 							await signUp.email({
