@@ -51,7 +51,7 @@ export function LoginForm() {
           </div>
           <Button
             type="submit"
-            className="w-full"
+            className=" bg-orange-500 w-full"
             disabled={loading}
             onClick={async () => {
               await signIn.email(
