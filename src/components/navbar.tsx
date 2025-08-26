@@ -1,9 +1,8 @@
 "use client"
-import Image from 'next/image';
-import Link from 'next/link';
-import { Button } from './ui/button';
-import { signOut } from '@/lib/auth-client';
-import { authClient } from "@/lib/auth-client";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "./ui/button";
+import { signOut, authClient } from "@/lib/authClient";
 
 export const Navbar = () => {
   const {
@@ -23,10 +22,14 @@ export const Navbar = () => {
           Sign Out
         </Button>
       ) : (
-        <>
-          <Link href='/Login' className='flex items-center px-5 hover:bg-gray-200'>Login</Link>
-          <Link href='/SignUp' className='flex items-center px-5 hover:bg-gray-200'>Sign Up</Link>
-        </>
+        <div>
+          <Button asChild className="m-1 bg-orange-500 hover:bg-orange-300">
+            <Link href='/login' className='flex items-center px-5'>Login</Link>
+          </Button>
+          <Button asChild className="m-1 bg-orange-500 hover:bg-orange-300">
+            <Link href='/sign-up' className='flex items-center px-5'>Sign Up</Link>
+          </Button>
+        </div>
       )}
     </div>
   )
