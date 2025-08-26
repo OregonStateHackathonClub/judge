@@ -14,7 +14,7 @@ export const Navbar = () => {
         <h1>BeaverHacks Official Judging Platform</h1>
       </Link>
       
-      <Link href='/Login' className='flex items-center px-5 hover:bg-gray-200'>Login</Link>
+      <Link href='/Login' className='h-full flex items-center px-5 hover:bg-gray-200'>Login</Link>
     </div>
   )
 }

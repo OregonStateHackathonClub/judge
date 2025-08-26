@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { set, z } from "zod"
@@ -21,18 +20,15 @@ import {
 import { useForm } from "react-hook-form"
 
 import { createTeam, getHackathon } from "@/app/actions"
-import { Prisma, PrismaClient } from "@prisma/client";
 import { useRouter } from "next/navigation"
 import React from "react"
-
-const prisma = new PrismaClient({})
 
 
 
 const formSchema = z.object({
   teamName: z.string().min(4, {message: "Username must be at least 4 characters.",}),
   lft: z.boolean().optional(),
-  email: z.string().optional(),
+  contact: z.string().optional(),
   description: z.string().optional(),
 })
 
@@ -67,7 +63,7 @@ export default function Home({params}:{
       name: values.teamName,
       lookingForTeammates: values.lft,
       description: values.description,
-      contact: values.email,
+      contact: values.contact,
       hackathon: {
         connect: { id: hackathon.id } //TEMP
       }
@@ -141,7 +137,7 @@ export default function Home({params}:{
 
           <FormField
             control={form.control}
-            name="email"
+            name="contact"
             render={({ field }) => (
               <FormItem className="pl-10 lft-component hidden">
                 <FormLabel>Contact</FormLabel>

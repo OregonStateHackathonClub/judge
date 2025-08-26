@@ -1,5 +1,3 @@
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { Suspense } from "react";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
