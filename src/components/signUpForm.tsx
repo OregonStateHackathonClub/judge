@@ -105,7 +105,7 @@ export function SignUpForm() {
 								password,
 								name: `${firstName} ${lastName}`,
 								image: "",
-								callbackURL: "/2026/submission",
+								callbackURL: "/",
 								fetchOptions: {
 									onResponse: () => {
 										setLoading(false);
@@ -117,7 +117,7 @@ export function SignUpForm() {
                                         console.log(ctx.error.message);
 									},
 									onSuccess: async () => {
-										router.push("/2026/submission");
+										router.push("/");
 									},
 								},
 							});

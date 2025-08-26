@@ -7,11 +7,13 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { signIn } from "@/lib/authClient";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   return (
     <Card className="max-w-md">
@@ -66,6 +68,9 @@ export function LoginForm() {
                 onResponse: () => {
                   setLoading(false);
                 },
+                onSuccess: async () => {
+										router.push("/");
+								},
               },
               );
             }}
