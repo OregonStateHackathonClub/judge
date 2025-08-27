@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String     @id @default(cuid())
   name          String
   email         String
   emailVerified Boolean
@@ -17,14 +17,24 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
-  teams    UserToTeams[]
+
+  judgeProfile JudgeProfile?
 
   @@unique([email])
   @@map("user")
 }
 
+model JudgeProfile {
+  userId String @id
+  user   User  @relation(fields: [userId], references: [id])
+
+  teams UsersToTeams[]
+
+  @@map("judgeProfile")
+}
+
 model Session {
-  id        String   @id
+  id        String   @id @default(cuid())
   expiresAt DateTime
   token     String
   createdAt DateTime
@@ -32,18 +42,18 @@ model Session {
   ipAddress String?
   userAgent String?
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
   @@map("session")
 }
 
 model Account {
-  id                    String    @id
+  id                    String    @id @default(cuid())
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -53,12 +63,13 @@ model Account {
   password              String?
   createdAt             DateTime
   updatedAt             DateTime
+  Teams                 Teams[]
 
   @@map("account")
 }
 
 model Verification {
-  id         String    @id
+  id         String    @id @default(cuid())
   identifier String
   value      String
   expiresAt  DateTime
@@ -69,76 +80,90 @@ model Verification {
 }
 
 model Hackathons {
-    id          String         @id
-    name        String      @unique
-    year        String
-    sponsors    String
-    rubric      Json
-    description String?
-    teams       Teams[]
-    submissions Submissions[]
-    tracks      Tracks[]
+  id          String        @id @default(cuid())
+  name        String        @unique
+  year        String
+  sponsors    String
+  rubric      Json
+  description String?
+  teams       Teams[]
+  submissions Submissions[]
+  tracks      Tracks[]
 
-    @@map("hackathons")
+  @@map("hackathons")
 }
 
 model Teams {
-    teamId       String          @id
-    name         String
-    submissionId String          
-    hackathonId  String
-    //relations
-    submission   Submissions   @relation(fields: [submissionId], references: [id])
-    hackathon    Hackathons    @relation(fields: [hackathonId], references: [id])
-    users        UserToTeams[]
-    @@map("teams")
+  teamId              String  @id @default(cuid())
+  name                String
+  lookingForTeammates Boolean @default(false)
+  description         String?
+  leaderId            String?
+  contact             String?
+  submissionId        String?
+  hackathonId         String
+
+  //relations
+  leader     Account?      @relation(fields: [leaderId], references: [id])
+  submission Submissions?   @relation(fields: [submissionId], references: [id])
+  hackathon  Hackathons     @relation(fields: [hackathonId], references: [id])
+  users      UsersToTeams[]
+
+  @@map("teams")
 }
 
-model UserToTeams {
-    teamId String
-    userId String
-    // relations
-    team Teams @relation(fields: [teamId], references: [teamId])
-    user User @relation(fields: [userId], references: [id])
-    @@id([teamId, userId])
-    @@map("userToTeams")
+model UsersToTeams {
+  teamId         String
+  judgeProfileId String
+  // relations
+  team           Teams        @relation(fields: [teamId], references: [teamId])
+  judgeProfile   JudgeProfile @relation(fields: [judgeProfileId], references: [userId])
+
+  @@id([teamId, judgeProfileId])
+  @@map("userToTeams")
 }
 
 model Submissions {
-    id           String      @id
-    name         String
-    bio          String
-    githubURL    String
-    ytVideo      String
-    images       String
-    comments     String
-    rubric       Json
-    score        Int
-    hackathonId  String
-    // relations
-    hackathon    Hackathons @relation(fields: [hackathonId], references: [id])
-    trackLinks   MergeTracks[]
-    Team Teams[]
-    @@map("submissions")
+  id              String   @id @default(cuid())
+  status          String
+  name            String   @default("")
+  miniDescription String   @default("")
+  bio             String   @default("")
+  githubURL       String   @default("")
+  ytVideo         String   @default("")
+  images          String[] @default([])
+  comments        String   @default("")
+  rubric          Json     @default("{}")
+  score           Int      @default(0)
+  hackathonId     String
+
+  // relations
+  hackathon  Hackathons            @relation(fields: [hackathonId], references: [id])
+  trackLinks TracksToSubmissions[]
+  Team       Teams[]
+
+  @@map("submissions")
 }
 
 model Tracks {
-    id          String          @id
-    name        String
-    description String
-    hackathonId String
-    //realtions
-    hackathon   Hackathons    @relation(fields: [hackathonId], references: [id])
-    submissions MergeTracks[]
-    @@map("track")
+  id          String                @id @default(cuid())
+  name        String
+  description String
+  hackathonId String
+  //realtions
+  hackathon   Hackathons            @relation(fields: [hackathonId], references: [id])
+  submissions TracksToSubmissions[]
+
+  @@map("track")
 }
 
-model MergeTracks {
-    trackId      String
-    submissionId String
-    // relations
-    track      Tracks      @relation(fields: [trackId], references: [id])
-    submission Submissions @relation(fields: [submissionId], references: [id])
-    @@id([trackId, submissionId])
-    @@map("mergeTrack")
+model TracksToSubmissions {
+  trackId      String
+  submissionId String
+  // relations
+  track        Tracks      @relation(fields: [trackId], references: [id])
+  submission   Submissions @relation(fields: [submissionId], references: [id])
+
+  @@id([trackId, submissionId])
+  @@map("mergeTrack")
 }
