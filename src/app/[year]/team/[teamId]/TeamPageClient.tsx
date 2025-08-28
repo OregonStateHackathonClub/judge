@@ -28,9 +28,11 @@ import {
 } from "@/components/ui/popover"
 
 import React, { useEffect, useState } from "react"
-import { getCodeFromTeamId, updateTeam } from "@/app/actions";
+import { getCodeFromTeamId, removeUserToTeams, updateTeam } from "@/app/actions";
 import { Prisma } from "@prisma/client";
 import { authClient } from "@/lib/authClient";
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 
 const formSchema = z.object({
     teamName: z.string().min(4, {message: "Username must be at least 4 characters.",}),
@@ -121,6 +123,16 @@ export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
         setEditing(false);
     }
 
+    async function removeUser(judgeProfileId: string) {
+      await removeUserToTeams(judgeProfileId, currTeam.teamId)
+      
+      setCurrTeam(prev => ({
+        ...prev,
+        users: prev.users.filter(u => u.judgeProfileId !== judgeProfileId),
+      }))
+
+    }
+
   if (!currTeam) {
     return <div>Team Does Not Exist</div>;
   }
@@ -143,12 +155,22 @@ export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
             <div className="text-2xl pt-5">Members:</div>
             <div className="pt-1 pl-10">
               {currTeam.users.map((ut: any) => (
-                <div key={ut.judgeProfileId}>{ut.judgeProfile.user.name}</div>
+                <div key={ut.judgeProfileId} className="flex items-center gap-2 pb-2">
+                  {ut.judgeProfile.user.name}
+                  <Image
+                    src="/trashcan-red.png" 
+                    alt="Remove user" 
+                    width={50} 
+                    height={50} 
+                    className="cursor-pointer w-3 h-3 object-contain"
+                    onClick={async () => {removeUser(ut.judgeProfileId)}}
+                  />
+                </div>
               ))}
-              {currTeam.users.length < 4 && (
+              {currTeam.users.length < 4 && isTeamMember && (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="rounded-4xl">+ Add Teammates</Button>
+                    <Button variant="outline" className="rounded-4xl mt-1">+ Add Teammates</Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-80">
                     <div className="">
@@ -225,7 +247,6 @@ export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
                             checked={field.value}
                             onCheckedChange={(checked : boolean | "indeterminate") => {
                             field.onChange(checked);
-                            // updateLFT(Boolean(checked));
                             }}
                         />
                         </FormControl>

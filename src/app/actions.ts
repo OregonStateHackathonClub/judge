@@ -58,6 +58,24 @@ export async function createUserToTeams(connectionData: Prisma.UsersToTeamsCreat
     }
 }
 
+export async function removeUserToTeams(judgeProfileId: string, teamId: string) {
+    try {
+      const deleted = await prisma.usersToTeams.delete({
+        where: {
+          teamId_judgeProfileId: {
+            judgeProfileId,
+            teamId
+          }
+        },
+      });
+  
+      return deleted;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+
 //TODO: Encoding and Decoding
 export async function getCodeFromTeamId(teamId: string): Promise<string> {
     return teamId
