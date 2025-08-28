@@ -45,6 +45,28 @@ export async function updateTeam(teamId: string, teamData: Prisma.TeamsUpdateInp
     }
 }
 
+export async function createUserToTeams(connectionData: Prisma.UsersToTeamsCreateInput) {
+    try {
+        const newTeam = await prisma.usersToTeams.create({
+            data: connectionData,
+        })
+
+        return newTeam
+    } catch (error) {
+        console.error(error)
+        return false
+    }
+}
+
+//TODO: Encoding and Decoding
+export async function getCodeFromTeamId(teamId: string): Promise<string> {
+    return teamId
+}
+
+export async function getTeamIdFromCode(code: string): Promise<string> {
+    return code
+}
+
 export async function getHackathon(year: string) {
     return await prisma.hackathons.findFirst({where:{year: year}})
 }

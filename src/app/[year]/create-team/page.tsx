@@ -21,7 +21,8 @@ import { useForm } from "react-hook-form"
 
 import { createTeam, getHackathon } from "@/app/actions"
 import { useRouter } from "next/navigation"
-import React from "react"
+import React, { useEffect } from "react"
+import { authClient } from "@/lib/authClient"
 
 
 
@@ -47,19 +48,31 @@ export default function Home({params}:{
       teamName: "",
     },
   })
+
+  const {
+    data: session, isPending,
+  } = authClient.useSession();
+
+  useEffect(() => {
+    if (!isPending && !session) {
+      router.push("/log-in");
+    }
+  }, [isPending, session, router]);
+
+  if (!session) {
+    return <div>Loading...</div>;
+  }
   
 
   // TODO: hackathon must be unique. must get the id somehow
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-
     let hackathon = await getHackathon(year)
     if (hackathon == null) {
       // Cope with failure
       return false
     }
 
-    let data = {
+    const teamData = {
       name: values.teamName,
       lookingForTeammates: values.lft,
       description: values.description,
@@ -68,7 +81,18 @@ export default function Home({params}:{
         connect: { id: hackathon.id } //TEMP
       }
     }
-    let team = await createTeam(data)
+    const team = await createTeam(teamData)
+
+    if (team == null) {
+      // Cope with failure
+      return false
+    }
+
+    // const usersToTeamsData = {
+    //   teamId: team.teamId,
+    //   judgeProfileId: session?.user.id
+    // }
+
     if (!team) {
       // Cope with failure
     } else {

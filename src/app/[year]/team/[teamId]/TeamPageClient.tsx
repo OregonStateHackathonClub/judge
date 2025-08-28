@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -19,8 +19,16 @@ import {
 } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 
+import { Label } from "@/components/ui/label"
+
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
 import React, { useEffect, useState } from "react"
-import { updateTeam } from "@/app/actions";
+import { getCodeFromTeamId, updateTeam } from "@/app/actions";
 import { Prisma } from "@prisma/client";
 import { authClient } from "@/lib/authClient";
 
@@ -50,11 +58,13 @@ type TeamWithUsers = Prisma.TeamsGetPayload<{
 export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
     const [editing, setEditing,] = useState(false);
     const [currTeam, setCurrTeam] = useState(team);
+    const [copied, setCopied] = useState(false)
 
     const {
         data: session,
     } = authClient.useSession();
 
+    // Probably needs further security
     const isTeamMember = currTeam.users.some(
       (ut) => ut.judgeProfile.userId === session?.user.id
     );
@@ -75,6 +85,22 @@ export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
           });
         }
       }, [team, form]);
+
+      const [inviteCode, setInviteCode] = useState<string>("")
+
+      useEffect(() => {
+        const fetchLink = async () => {
+          const code = await getCodeFromTeamId(currTeam.teamId)
+          setInviteCode(code)
+        }
+        fetchLink()
+      }, [currTeam])
+
+    const copyLink = async () => {
+      await navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/invite/${inviteCode}`)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         console.log(values)
@@ -119,6 +145,35 @@ export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
               {currTeam.users.map((ut: any) => (
                 <div key={ut.judgeProfileId}>{ut.judgeProfile.user.name}</div>
               ))}
+              {currTeam.users.length < 4 && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="rounded-4xl">+ Add Teammates</Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80">
+                    <div className="">
+                      <p className="mb-2 text-sm font-medium">
+                        Send this invite link to friends:
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={`${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/invite/${inviteCode}`}
+                          readOnly
+                          className="flex-1 px-2 py-1 text-sm border rounded"
+                        />
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={copyLink}
+                        >
+                          {copied ? "Copied!" : "Copy"}
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
             </div>
             {currTeam.contact && (
               <>
