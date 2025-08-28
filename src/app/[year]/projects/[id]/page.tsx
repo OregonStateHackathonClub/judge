@@ -1,232 +1,274 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import Link from "next/link";
-import { ArrowLeft, Github, Youtube, Star, MessageCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  Github,
+  Youtube,
+  Star,
+  MessageCircle,
+  Users,
+} from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-const prisma = new PrismaClient();
+// If using NextAuth:
+// import { getServerSession } from "next-auth";
 
-export default async function ProjectPage({ 
-  params 
-}: { 
-  params: { year: string; id: string } 
+// Use shared Prisma instance from /lib/prisma
+
+export default async function ProjectPage({
+  params,
+}: {
+  params: { year: string; id: string };
 }) {
-  const submission = await prisma.submissions.findUnique({
+  const submission = await Prisma.submissions.findUnique({
     where: { id: params.id },
     include: {
       hackathon: true,
-      trackLinks: {
-        include: {
-          track: true
-        }
-      },
+      trackLinks: { include: { track: true } },
       Team: {
-  include: {
-    users: {
-      include: {
-        judgeProfile: {
-          include: {
-            user: true
-          }
-        }
-      }
-    }
-  }
-}
-
+        include: {
+          users: {
+            include: {
+              user: true,
+              judgeProfile: true,
+            },
+          },
+        },
+      },
     },
   });
 
   if (!submission) {
     return (
-      <div className="text-center mt-20 text-red-600 text-2xl">
+      <div className="flex min-h-screen items-center justify-center bg-neutral-950 text-red-500">
         Project not found.
       </div>
     );
   }
 
+  // ===== AUTH HOOK PLACE =====
+  // const session = await getServerSession(authOptions);
+  // const currentUserId = session?.user?.id;
+  // const teamUserIds = submission.Team?.[0]?.users.map((u: any) => u.userId) || [];
+  // const isJudge = submission.Team?.[0]?.users.some((u: any) => u.judgeProfile) || false;
+  // const canViewScores = teamUserIds.includes(currentUserId) || isJudge;
+  const canViewScores = true; // remove this line once hooked into NextAuth
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header with back button */}
-      <div className="bg-orange-400 px-6 py-4">
-        <div className="flex items-center gap-4">
-          <Link 
+    <div className="min-h-screen bg-neutral-950 text-neutral-200">
+      {/* ===== HEADER ===== */}
+      <header className="border-b border-neutral-800 bg-neutral-900/60 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4">
+          <Link
             href={`/${params.year}`}
-            className="text-white hover:text-orange-100 flex items-center gap-2"
+            className="inline-flex items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-300 hover:border-orange-500/50 hover:text-orange-400 transition"
           >
-            <ArrowLeft size={20} />
-            Back to BeaverHacks {params.year}
+            <ArrowLeft className="h-4 w-4" />
+            Back to {params.year} Projects
           </Link>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-6xl mx-auto p-6">
+      {/* ===== MAIN CONTENT ===== */}
+      <main className="mx-auto max-w-7xl px-4 py-10">
         {/* Project Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="mb-10">
+          <h1 className="text-3xl sm:text-4xl font-bold text-white">
             {submission.name}
           </h1>
-          
+
           {/* Track badges */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="mt-3 flex flex-wrap gap-2">
             {submission.trackLinks.map((link: any) => (
-              <Badge key={link.trackId} variant="secondary" className="bg-blue-100 text-blue-800">
+              <Badge
+                key={link.trackId}
+                className="bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
+              >
                 {link.track.name}
               </Badge>
             ))}
           </div>
 
-          {/* Score and basic info */}
-          <div className="flex items-center gap-6 text-lg">
-            <div className="flex items-center gap-2">
-              <Star className="text-yellow-500" size={20} />
-              <span className="font-semibold">Score: {submission.score}</span>
-            </div>
+          {/* Score + Team */}
+          <div className="mt-6 flex flex-wrap items-center gap-6 text-sm sm:text-base text-neutral-300">
+            {canViewScores && (
+              <div className="inline-flex items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-1.5">
+                <Star className="h-4 w-4 text-yellow-400" />
+                <span className="font-semibold">
+                  Score: {submission.score ?? 0}
+                </span>
+              </div>
+            )}
             {submission.Team?.[0] && (
-              <div className="text-gray-600">
+              <div className="inline-flex items-center gap-2 text-neutral-400">
+                <Users className="h-4 w-4" />
                 Team: {submission.Team[0].name}
               </div>
             )}
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Project Details */}
+        {/* Two column layout */}
+        <div className="grid gap-8 lg:grid-cols-2">
+          {/* LEFT column */}
           <div className="space-y-6">
-            {/* Description */}
-            <Card>
+            {/* About */}
+            <Card className="rounded-2xl border border-neutral-800 bg-neutral-900/60">
               <CardHeader>
-                <CardTitle>About This Project</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 leading-relaxed">
-                  {submission.bio}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Comments/Feedback */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MessageCircle size={20} />
-                  Judge Feedback
+                <CardTitle className="text-lg text-white">
+                  About This Project
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 leading-relaxed">
-                  {submission.comments || "No feedback available."}
+                <p className="text-sm leading-relaxed text-neutral-300">
+                  {submission.bio || "No description provided."}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Team Members */}
-            {submission.Team?.[0]?.users && submission.Team[0].users.length > 0 && (
-              <Card>
+            {/* Judge Feedback */}
+            {canViewScores && (
+              <Card className="rounded-2xl border border-neutral-800 bg-neutral-900/60">
                 <CardHeader>
-                  <CardTitle>Team Members</CardTitle>
+                  <CardTitle className="flex items-center gap-2 text-lg text-white">
+                    <MessageCircle className="h-5 w-5" />
+                    Judge Feedback
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {submission.Team[0].users.map((userTeam: any) => (
-                      <div key={userTeam.userId} className="flex items-center gap-3">
-                        {userTeam.user && userTeam.user.image && (
-                          <img 
-                            src={userTeam.user.image} 
-                            alt={userTeam.user.name || "Team member"}
-                            className="w-10 h-10 rounded-full"
+                  <p className="text-sm leading-relaxed text-neutral-300">
+                    {submission.comments || "No feedback available."}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Team Members */}
+            {submission.Team?.[0]?.users?.length > 0 && (
+              <Card className="rounded-2xl border border-neutral-800 bg-neutral-900/60">
+                <CardHeader>
+                  <CardTitle className="text-lg text-white">
+                    Team Members
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {submission.Team[0].users.map((member: any) => (
+                      <li
+                        key={member.userId}
+                        className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+                      >
+                        {member.user?.image && (
+                          <img
+                            src={member.user.image}
+                            alt={member.user.name || "Team member"}
+                            className="h-10 w-10 rounded-full object-cover"
                           />
                         )}
                         <div>
-                          <p className="font-medium">{userTeam.user?.name || "Unknown"}</p>
-                          <p className="text-sm text-gray-600">{userTeam.user?.email || ""}</p>
+                          <p className="text-sm font-medium text-white">
+                            {member.user?.name || "Unknown"}
+                          </p>
+                          <p className="text-xs text-neutral-400">
+                            {member.user?.email}
+                          </p>
                         </div>
-                      </div>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </CardContent>
               </Card>
             )}
           </div>
 
-          {/* Right Column - Media and Links */}
+          {/* RIGHT column */}
           <div className="space-y-6">
-            {/* Project Image */}
-            <Card>
+            {/* Image */}
+            <Card className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60">
               <CardContent className="p-0">
                 <img
-                src={submission.images[0] || "/beaver.png"}
+                  src={submission.images?.[0] || "/beaver.png"}
                   alt={`${submission.name} showcase`}
-                  className="w-full h-64 object-cover rounded-lg"
+                  className="h-64 w-full object-cover"
                 />
               </CardContent>
             </Card>
 
             {/* Links */}
-            <Card>
+            <Card className="rounded-2xl border border-neutral-800 bg-neutral-900/60">
               <CardHeader>
-                <CardTitle>Project Links</CardTitle>
+                <CardTitle className="text-lg text-white">
+                  Project Links
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {submission.githubURL && (
                   <Link
                     href={submission.githubURL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                    className="flex items-center gap-2 rounded-xl border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm text-neutral-200 hover:border-neutral-700 hover:bg-neutral-800"
                   >
-                    <Github size={20} />
-                    <span>View Source Code</span>
+                    <Github className="h-4 w-4" />
+                    View Source Code
                   </Link>
                 )}
-                
+
                 {submission.ytVideo && (
                   <Link
                     href={submission.ytVideo}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                    className="flex items-center gap-2 rounded-xl border border-red-800 bg-red-600/80 px-3 py-2 text-sm text-white hover:bg-red-600"
                   >
-                    <Youtube size={20} />
-                    <span>Watch Demo Video</span>
+                    <Youtube className="h-4 w-4" />
+                    Watch Demo Video
                   </Link>
                 )}
               </CardContent>
             </Card>
 
-            {/* Rubric/Scoring Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Scoring Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Overall Score:</span>
-                    <span className="font-semibold">{submission.score}/100</span>
-                  </div>
-                  {/* You can expand this to show rubric breakdown if stored in JSON */}
-                  {submission.rubric && typeof submission.rubric === 'object' && (
-                    <div className="mt-4 pt-4 border-t">
-                      <p className="text-sm text-gray-600 mb-2">Detailed Rubric:</p>
-                      <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
-                        {JSON.stringify(submission.rubric, null, 2)}
-                      </pre>
+            {/* Scoring Details (restricted) */}
+            {canViewScores && (
+              <Card className="rounded-2xl border border-neutral-800 bg-neutral-900/60">
+                <CardHeader>
+                  <CardTitle className="text-lg text-white">
+                    Scoring Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-neutral-300">
+                    <div className="flex justify-between">
+                      <span>Overall Score</span>
+                      <span className="font-semibold text-white">
+                        {submission.score ?? 0}/100
+                      </span>
                     </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+
+                    {submission.rubric &&
+                      typeof submission.rubric === "object" && (
+                        <div className="mt-4 border-t border-neutral-800 pt-3">
+                          <p className="mb-2 text-xs text-neutral-400">
+                            Detailed Rubric:
+                          </p>
+                          <pre className="max-h-64 overflow-auto rounded-lg bg-neutral-950 p-3 text-xs text-neutral-300">
+                            {JSON.stringify(submission.rubric, null, 2)}
+                          </pre>
+                        </div>
+                      )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
