@@ -2,10 +2,10 @@ import { PrismaClient } from "@prisma/client";
 import InvitePageClient from "./inviteCodeClient";
 import { getTeamIdFromCode } from "@/app/actions";
 
-export default async function Page({ params }: { params: {code: string } }) {
+export default async function Page({ params }: { params: {year: string, code: string } }) {
   const prisma = new PrismaClient();
 
-  const {code} = await params
+  const {year, code} = await params
 
   const teamId = await getTeamIdFromCode(code)
 
@@ -29,6 +29,6 @@ export default async function Page({ params }: { params: {code: string } }) {
   } else if (team.users.length >= 4) {
     return <div>Team Is Full.</div>
   } else {
-    return <InvitePageClient team={team}/>
+    return <InvitePageClient year={year} team={team}/>
   }
 }

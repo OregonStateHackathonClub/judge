@@ -57,7 +57,7 @@ type TeamWithUsers = Prisma.TeamsGetPayload<{
   };
 }>;
 
-export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
+export default function TeamPageClient({ team, year }: { team : TeamWithUsers, year : string }) {
     const [editing, setEditing,] = useState(false);
     const [currTeam, setCurrTeam] = useState(team);
     const [copied, setCopied] = useState(false)
@@ -98,8 +98,12 @@ export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
         fetchLink()
       }, [currTeam])
 
+    function getLink() : string {
+      return `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}invite/${inviteCode}`
+    }
+
     const copyLink = async () => {
-      await navigator.clipboard.writeText(`${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/invite/${inviteCode}`)
+      await navigator.clipboard.writeText(getLink())
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     }
@@ -180,7 +184,7 @@ export default function TeamPageClient({ team }: { team : TeamWithUsers }) {
                       <div className="flex items-center gap-2">
                         <input
                           type="text"
-                          value={`${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/invite/${inviteCode}`}
+                          value={getLink()}
                           readOnly
                           className="flex-1 px-2 py-1 text-sm border rounded"
                         />

@@ -20,7 +20,7 @@ type TeamWithUsers = Prisma.TeamsGetPayload<{
   };
 }>;
 
-export default function InvitePageClient({ team }: { team : TeamWithUsers }) {
+export default function InvitePageClient({ team, year }: { team : TeamWithUsers, year: string }) {
 
     const [failed, setFailed] = useState(false)
 
@@ -30,9 +30,8 @@ export default function InvitePageClient({ team }: { team : TeamWithUsers }) {
             setFailed(true)
             return
         }
-
-        //TODO: HARD CODED YEAR!!!!!
-        router.push(`/2026/team/${team.teamId}`);
+        
+        router.push(`/${year}/team/${team.teamId}`);
       }
 
     const router = useRouter()
