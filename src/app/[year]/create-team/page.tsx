@@ -38,7 +38,7 @@ export default function Home({params}:{
   params: Promise<{ year: string }>;
 }) {
 
-  const year = React.use(params).year
+  const hackathonId = React.use(params).year
 
   const router = useRouter()
   
@@ -66,7 +66,7 @@ export default function Home({params}:{
 
   // TODO: hackathon must be unique. must get the id somehow
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    let hackathon = await getHackathon(year)
+    let hackathon = await getHackathon(hackathonId)
     if (hackathon == null) {
       // Cope with failure
       return false
@@ -96,7 +96,7 @@ export default function Home({params}:{
     if (!team) {
       // Cope with failure
     } else {
-      router.push(`/${year}/${team.teamId}`)
+      router.push(`/${hackathonId}/${team.teamId}`)
     }
     
   }

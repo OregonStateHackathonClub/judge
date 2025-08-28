@@ -30,7 +30,7 @@ export default function InvitePageClient({ team, year }: { team : TeamWithUsers,
             setFailed(true)
             return
         }
-        
+
         router.push(`/${year}/team/${team.teamId}`);
       }
 

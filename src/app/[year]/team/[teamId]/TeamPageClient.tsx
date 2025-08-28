@@ -19,8 +19,6 @@ import {
 } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 
-import { Label } from "@/components/ui/label"
-
 import {
   Popover,
   PopoverContent,
@@ -28,7 +26,7 @@ import {
 } from "@/components/ui/popover"
 
 import React, { useEffect, useState } from "react"
-import { getCodeFromTeamId, removeUserToTeams, updateTeam } from "@/app/actions";
+import { getInviteCode, removeUserToTeams, updateTeam } from "@/app/actions";
 import { Prisma } from "@prisma/client";
 import { authClient } from "@/lib/authClient";
 import Image from "next/image"
@@ -92,14 +90,14 @@ export default function TeamPageClient({ team, year }: { team : TeamWithUsers, y
 
       useEffect(() => {
         const fetchLink = async () => {
-          const code = await getCodeFromTeamId(currTeam.teamId)
+          const code = await getInviteCode(currTeam.teamId)
           setInviteCode(code)
         }
         fetchLink()
       }, [currTeam])
 
     function getLink() : string {
-      return `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}invite/${inviteCode}`
+      return `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}/invite/${inviteCode}`
     }
 
     const copyLink = async () => {
