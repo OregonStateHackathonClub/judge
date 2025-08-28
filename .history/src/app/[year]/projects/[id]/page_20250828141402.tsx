@@ -4,8 +4,6 @@ import { ArrowLeft, Github, Youtube, Star, MessageCircle } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -13,34 +11,33 @@ import { Badge } from "@/components/ui/badge";
 
 const prisma = new PrismaClient();
 
-export default async function ProjectPage({ 
-  params 
-}: { 
-  params: { year: string; id: string } 
+export default async function ProjectPage({
+  params,
+}: {
+  params: { year: string; id: string };
 }) {
-  const submission = await prisma.submissions.findUnique({
-    where: { id: params.id },
+  const submission = await prisma.submission.findUnique({
+    where: { id: Number(params.id) }, // ensure id is number
     include: {
       hackathon: true,
-      trackLinks: {
+      tracks: {
         include: {
-          track: true
-        }
+          track: true,
+        },
       },
-      Team: {
-  include: {
-    users: {
-      include: {
-        judgeProfile: {
-          include: {
-            user: true
-          }
-        }
-      }
-    }
-  }
-}
-
+      team: {
+        include: {
+          users: {
+            include: {
+              judgeProfile: {
+                include: {
+                  user: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -57,7 +54,7 @@ export default async function ProjectPage({
       {/* Header with back button */}
       <div className="bg-orange-400 px-6 py-4">
         <div className="flex items-center gap-4">
-          <Link 
+          <Link
             href={`/${params.year}`}
             className="text-white hover:text-orange-100 flex items-center gap-2"
           >
@@ -71,34 +68,38 @@ export default async function ProjectPage({
         {/* Project Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {submission.name}
+            {submission.title}
           </h1>
-          
+
           {/* Track badges */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {submission.trackLinks.map((link: any) => (
-              <Badge key={link.trackId} variant="secondary" className="bg-blue-100 text-blue-800">
+            {submission.tracks.map((link) => (
+              <Badge
+                key={link.trackId}
+                variant="secondary"
+                className="bg-blue-100 text-blue-800"
+              >
                 {link.track.name}
               </Badge>
             ))}
           </div>
 
-          {/* Score and basic info */}
+          {/* Score and team info */}
           <div className="flex items-center gap-6 text-lg">
             <div className="flex items-center gap-2">
               <Star className="text-yellow-500" size={20} />
-              <span className="font-semibold">Score: {submission.score}</span>
+              <span className="font-semibold">
+                Score: {submission.score ?? "N/A"}
+              </span>
             </div>
-            {submission.Team?.[0] && (
-              <div className="text-gray-600">
-                Team: {submission.Team[0].name}
-              </div>
+            {submission.team && (
+              <div className="text-gray-600">Team: {submission.team.name}</div>
             )}
           </div>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Project Details */}
+          {/* Left Column */}
           <div className="space-y-6">
             {/* Description */}
             <Card>
@@ -107,12 +108,12 @@ export default async function ProjectPage({
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 leading-relaxed">
-                  {submission.bio}
+                  {submission.description || "No description provided."}
                 </p>
               </CardContent>
             </Card>
 
-            {/* Comments/Feedback */}
+            {/* Judge Feedback */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -128,25 +129,32 @@ export default async function ProjectPage({
             </Card>
 
             {/* Team Members */}
-            {submission.Team?.[0]?.users && submission.Team[0].users.length > 0 && (
+            {submission.team?.users?.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Team Members</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {submission.Team[0].users.map((userTeam: any) => (
-                      <div key={userTeam.userId} className="flex items-center gap-3">
-                        {userTeam.user && userTeam.user.image && (
-                          <img 
-                            src={userTeam.user.image} 
+                    {submission.team.users.map((userTeam) => (
+                      <div
+                        key={userTeam.userId}
+                        className="flex items-center gap-3"
+                      >
+                        {userTeam.user?.image && (
+                          <img
+                            src={userTeam.user.image}
                             alt={userTeam.user.name || "Team member"}
                             className="w-10 h-10 rounded-full"
                           />
                         )}
                         <div>
-                          <p className="font-medium">{userTeam.user?.name || "Unknown"}</p>
-                          <p className="text-sm text-gray-600">{userTeam.user?.email || ""}</p>
+                          <p className="font-medium">
+                            {userTeam.user?.name || "Unnamed"}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {userTeam.user?.email}
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -156,14 +164,17 @@ export default async function ProjectPage({
             )}
           </div>
 
-          {/* Right Column - Media and Links */}
+          {/* Right Column */}
           <div className="space-y-6">
             {/* Project Image */}
             <Card>
               <CardContent className="p-0">
                 <img
-                src={submission.images[0] || "/beaver.png"}
-                  alt={`${submission.name} showcase`}
+                  src={
+                    submission.images?.[0] ||
+                    "/beaver.png"
+                  }
+                  alt={`${submission.title} showcase`}
                   className="w-full h-64 object-cover rounded-lg"
                 />
               </CardContent>
@@ -186,7 +197,7 @@ export default async function ProjectPage({
                     <span>View Source Code</span>
                   </Link>
                 )}
-                
+
                 {submission.ytVideo && (
                   <Link
                     href={submission.ytVideo}
@@ -201,7 +212,7 @@ export default async function ProjectPage({
               </CardContent>
             </Card>
 
-            {/* Rubric/Scoring Details */}
+            {/* Scoring Details */}
             <Card>
               <CardHeader>
                 <CardTitle>Scoring Details</CardTitle>
@@ -210,17 +221,21 @@ export default async function ProjectPage({
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span>Overall Score:</span>
-                    <span className="font-semibold">{submission.score}/100</span>
+                    <span className="font-semibold">
+                      {submission.score ?? "N/A"}/100
+                    </span>
                   </div>
-                  {/* You can expand this to show rubric breakdown if stored in JSON */}
-                  {submission.rubric && typeof submission.rubric === 'object' && (
-                    <div className="mt-4 pt-4 border-t">
-                      <p className="text-sm text-gray-600 mb-2">Detailed Rubric:</p>
-                      <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
-                        {JSON.stringify(submission.rubric, null, 2)}
-                      </pre>
-                    </div>
-                  )}
+                  {submission.rubric &&
+                    typeof submission.rubric === "object" && (
+                      <div className="mt-4 pt-4 border-t">
+                        <p className="text-sm text-gray-600 mb-2">
+                          Detailed Rubric:
+                        </p>
+                        <pre className="text-xs bg-gray-100 p-2 rounded overflow-auto">
+                          {JSON.stringify(submission.rubric, null, 2)}
+                        </pre>
+                      </div>
+                    )}
                 </div>
               </CardContent>
             </Card>

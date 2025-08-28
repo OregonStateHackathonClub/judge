@@ -137,16 +137,16 @@ export default async function ProjectPage({
                   <div className="space-y-3">
                     {submission.Team[0].users.map((userTeam: any) => (
                       <div key={userTeam.userId} className="flex items-center gap-3">
-                        {userTeam.user && userTeam.user.image && (
+                        {userTeam.user.image && (
                           <img 
                             src={userTeam.user.image} 
-                            alt={userTeam.user.name || "Team member"}
+                            alt={userTeam.user.name}
                             className="w-10 h-10 rounded-full"
                           />
                         )}
                         <div>
-                          <p className="font-medium">{userTeam.user?.name || "Unknown"}</p>
-                          <p className="text-sm text-gray-600">{userTeam.user?.email || ""}</p>
+                          <p className="font-medium">{userTeam.user.name}</p>
+                          <p className="text-sm text-gray-600">{userTeam.user.email}</p>
                         </div>
                       </div>
                     ))}
