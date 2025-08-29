@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import SubmissionsClient from "./components/submission_client";
 
-const prisma = new PrismaClient();
 
 export default async function Page({ params }: { params: { year: string } }) {
   const hackathon = await prisma.hackathons.findFirst({

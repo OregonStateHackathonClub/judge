@@ -82,7 +82,7 @@ export default function SubmissionsClient({
               Oregon State University • BeaverHacks
             </span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white">
-              BeaverHacks {id}
+              BeaverHacks {year}
             </h1>
             <p className="max-w-2xl text-sm sm:text-base text-neutral-300">
               Explore projects, filter by track, and discover this year’s builds.

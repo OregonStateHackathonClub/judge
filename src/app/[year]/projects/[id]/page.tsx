@@ -1,4 +1,3 @@
-import { Prisma } from "@prisma/client";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -15,18 +14,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { prisma } from "@/lib/prisma";
 
 // If using NextAuth:
 // import { getServerSession } from "next-auth";
 
 // Use shared Prisma instance from /lib/prisma
 
+
 export default async function ProjectPage({
   params,
 }: {
   params: { year: string; id: string };
 }) {
-  const submission = await Prisma.submissions.findUnique({
+  const submission = await prisma.submissions.findUnique({
     where: { id: params.id },
     include: {
       hackathon: true,
@@ -35,8 +36,7 @@ export default async function ProjectPage({
         include: {
           users: {
             include: {
-              user: true,
-              judgeProfile: true,
+              judgeProfile: { include: { user: true } },
             },
           },
         },
