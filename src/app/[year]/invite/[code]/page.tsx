@@ -1,13 +1,19 @@
 import { PrismaClient } from "@prisma/client";
 import InvitePageClient from "./inviteCodeClient";
-import { getTeamIdFromCode } from "@/app/actions";
+import { getTeamIdFromInvite } from "@/app/actions";
 
 export default async function Page({ params }: { params: {year: string, code: string } }) {
   const prisma = new PrismaClient();
 
   const {year, code} = await params
 
-  const teamId = await getTeamIdFromCode(code)
+  const teamId = await getTeamIdFromInvite(code)
+
+  if (!teamId) {
+    // Cope with your failures
+    console.error("Failed to get dd from invite code")
+    return <div>Invite Failed</div>
+  }
 
   const team = await prisma.teams.findUnique({
     where: { teamId: teamId },
@@ -29,6 +35,6 @@ export default async function Page({ params }: { params: {year: string, code: st
   } else if (team.users.length >= 4) {
     return <div>Team Is Full.</div>
   } else {
-    return <InvitePageClient year={year} team={team}/>
+    return <InvitePageClient year={year} code={code}/>
   }
 }

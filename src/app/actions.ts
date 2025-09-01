@@ -1,141 +1,258 @@
 'use server'
 
 import { Prisma, PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient({})
-
-
-// app/api/protected/route.ts
 import { auth } from "@/lib/auth"; // your Better Auth instance
 import { headers } from "next/headers";
 
-// export async function GET(req: Request) {
-//   // This will read the cookie or bearer token automatically,
-//   // verify the JWT, and return the user/session.
-//   const session = await auth.api.getSession({ req });
+const prisma = new PrismaClient({})
 
-//   if (!session) {
-//     return new Response("Unauthorized", { status: 401 });
-//   }
+export async function isTeamMember(teamId : string) : Promise<boolean> {
+    const session = await auth.api.getSession({headers: await headers()});
 
-//   // The userId is right here
-//   const userId = session.user.id;
+    if (!session) {
+        return false
+    }
 
-//   return Response.json({ userId });
-// }
+    const team = await prisma.teams.findUnique({
+        where: {
+            teamId: teamId
+        },
+        include: {
+            users: {
+                include: {
+                    judgeProfile: {
+                        include: {
+                            user: true,
+                        },
+                    },
+                },
+            },
+        },
+    })
 
+    if (!team) {
+        return false
+    }
 
-// TODO: everything here needs a bit more security
+    return team.users.some(
+        (ut) => ut.judgeProfile.userId === session.user.id
+    );
 
-export async function createUser(userData: Prisma.JudgeProfileCreateInput) {
+}
+
+// Return true if successful. Otherwise, return false
+export async function createUser(userData: Prisma.JudgeProfileCreateInput) : Promise<boolean> {
     try {
-        const newUser = await prisma.judgeProfile.create({
+        await prisma.judgeProfile.create({
             data: userData,
         })
 
-        return newUser
-    } catch (error) {
-        console.error(error)
-    }
-}
-
-export async function createTeam(teamData: Prisma.TeamsCreateInput) {
-    try {
-        const newTeam = await prisma.teams.create({
-            data: teamData,
-        })
-
-        return newTeam
+        return true
     } catch (error) {
         console.error(error)
         return false
     }
 }
 
-export async function updateTeam(teamId: string, teamData: Prisma.TeamsUpdateInput) {
+// Perhaps only allow if user is not already in a team??
+// Return teamId if successful. false if unsucessful
+export async function createTeam(teamData: Prisma.TeamsCreateInput, addSelf : boolean = false) : Promise<string | false> {
     try {
+        let userId = null;
+        if (addSelf) {
+            const session = await auth.api.getSession({headers: await headers()});
+    
+            if (!session) {
+                return false
+            }
 
-        let updatedTeam = prisma.teams.update({
+            userId = session.user.id
+        }
+
+
+        const newTeam = await prisma.teams.create({
+            data: teamData,
+        })
+
+        if (addSelf) {
+            if (userId == null) {
+                return false
+            }
+
+            await prisma.usersToTeams.create({
+                data: {
+                    judgeProfileId: userId,
+                    teamId: newTeam.teamId
+                },
+            })
+        }
+
+        return newTeam.teamId
+    } catch (error) {
+        console.error(error)
+        return false
+    }
+}
+
+// Return true if successful. Otherwise, return false
+export async function updateTeam(teamId: string, teamData: Prisma.TeamsUpdateInput) : Promise<boolean> {
+    try {
+        if (!await isTeamMember(teamId)) {
+            return false
+        }
+
+        await prisma.teams.update({
             data: teamData,
             where: { teamId: teamId, },
             include: { users: { include: { judgeProfile: { include: { user: true } } } } },
         })
 
-        return updatedTeam
+        return true
     } catch (error) {
         console.error(error)
         return false
     }
 }
 
-export async function createUserToTeams(connectionData: Prisma.UsersToTeamsCreateInput) {
-    
+// Return teamId if successful. Otherwise, return false
+export async function joinTeam(inviteCode : string) : Promise<string | false> {
     const session = await auth.api.getSession({headers: await headers()});
 
     if (!session) {
-        return new Response("Unauthorized", { status: 401 });
+        return false
     }
 
-    // The userId is right here
-    const userId = session.user.id;
+    const team = await prisma.teams.findFirst({
+        where: {
+            invites: {
+                some: {
+                    code: inviteCode
+                }
+            }
+        },
+        include: {
+            users: true
+        }
+    })
 
+    if (!team) {
+        return false
+    }
+    if (team.users.length >= 4) {
+        return false
+    }
 
-    // return Response.json({ userId });
-    
-    try {
-        const newTeam = await prisma.usersToTeams.create({
-            data: connectionData,
-        })
+    const connection = await prisma.usersToTeams.create({
+        data: {
+            team: {
+                connect: {
+                    teamId: team.teamId
+                }
+            },
+            judgeProfile: {
+                connect: {
+                    userId: session.user.id
+                }
+            }
+        },
+    })
 
-        return newTeam
-    } catch (error) {
-        console.error(error)
+    if (connection) {
+        return team.teamId
+    } else {
         return false
     }
 }
 
-export async function removeUserToTeams(judgeProfileId: string, teamId: string) {
-    try {
-      const deleted = await prisma.usersToTeams.delete({
-        where: {
-          teamId_judgeProfileId: {
-            judgeProfileId,
-            teamId
-          }
+// Return partial team object if successful. Otherwise, return null
+export async function getTeamInfo(teamId : string) {
+    const team = await prisma.teams.findUnique({
+        where: { teamId },
+        select: {
+          teamId: true,
+          name: true,
+          description: true,
+          contact: true,
+          lookingForTeammates: true,
+          users: {
+            select: {
+              judgeProfileId: true,
+              judgeProfile: {
+                select: {
+                  user: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       });
-  
-      return deleted;
+
+      if (!team) {
+        return null
+      }
+
+      return team
+}
+
+// Return true if successful. Otherwise, return false
+export async function removeUserToTeams(judgeProfileId: string, teamId: string) : Promise<boolean> {
+    try {
+
+        if (!await isTeamMember(teamId)) {
+            return false
+        }
+
+        const deleted = await prisma.usersToTeams.delete({
+            where: {
+            teamId_judgeProfileId: {
+                judgeProfileId,
+                teamId
+            }
+            },
+        });
+
+        return true
     } catch (error) {
       console.error(error);
-      return false;
+      return false
     }
 }
 
-export async function getInviteCode(teamId: string): Promise<string> {
-    let code = await prisma.invites.findFirst({
+// Return invite code if successful. Otherwise, return false
+export async function getInviteCode(teamId: string) : Promise<string | false> {
+    if (!await isTeamMember(teamId)) {
+        return false
+    }
+
+
+    let invite = await prisma.invites.findFirst({
         where: {
             teamId: teamId
         }
     })
 
-    if (!code) {
-        code = await prisma.invites.create({
+    if (!invite) {
+        invite = await prisma.invites.create({
             data: {
                 teamId: teamId
             }
         })
     }
-
-    return code?.code
+    return invite.code
 }
 
-export async function getTeamIdFromCode(code: string): Promise<string> {
+// Fine?? Needs more security??
+// Return teamId if successful. Otherwise, return false
+export async function getTeamIdFromInvite(inviteCode: string): Promise<string | false> {
     const team = await prisma.teams.findFirst({
         where: {
             invites: {
                 some: {
-                    code: code
+                    code: inviteCode
                 }
             }
         }
@@ -145,9 +262,5 @@ export async function getTeamIdFromCode(code: string): Promise<string> {
         return team.teamId
     }
     
-    return ""
-}
-
-export async function getHackathon(id: string) {
-    return await prisma.hackathons.findUnique({where:{id: id}})
+    return false
 }

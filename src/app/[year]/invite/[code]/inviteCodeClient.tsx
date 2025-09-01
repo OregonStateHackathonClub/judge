@@ -1,37 +1,24 @@
 'use client'
 
 import React, { useEffect, useState } from "react"
-import { createUserToTeams } from "@/app/actions";
+import { joinTeam } from "@/app/actions";
 import { Prisma } from "@prisma/client";
 import { authClient } from "@/lib/authClient";
 import { useRouter } from "next/navigation"
 
-type TeamWithUsers = Prisma.TeamsGetPayload<{
-  include: {
-    users: {
-      include: {
-        judgeProfile: {
-          include: {
-            user: true
-          };
-        };
-      };
-    };
-  };
-}>;
-
-export default function InvitePageClient({ team, year }: { team : TeamWithUsers, year: string }) {
+export default function InvitePageClient({ code, year }: { code : string, year: string }) {
 
     const [failed, setFailed] = useState(false)
 
     async function addToTeam() {
-        const result = await createUserToTeams({team: {connect: {teamId: team.teamId}}, judgeProfile: {connect: {userId: session?.user.id}}})
-        if (!result) {
+        const teamId = await joinTeam(code)
+        if (!teamId) {
+            console.error("Could not join team")
             setFailed(true)
             return
         }
 
-        router.push(`/${year}/team/${team.teamId}`);
+        router.push(`/${year}/team/${teamId}`);
       }
 
     const router = useRouter()
@@ -46,7 +33,7 @@ export default function InvitePageClient({ team, year }: { team : TeamWithUsers,
         }
 
         if (session) {
-            addToTeam()
+          addToTeam()
         }
 
     }, [isPending, session, router]);

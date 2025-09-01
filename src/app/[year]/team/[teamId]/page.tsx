@@ -1,31 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import TeamPageClient from "./TeamPageClient";
+import { isTeamMember } from "@/app/actions";
 
 export default async function Page({ params }: { params: { year: string; teamId: string } }) {
-  const prisma = new PrismaClient();
-
   const {year, teamId} = await params
 
-  const team = await prisma.teams.findUnique({
-    where: { teamId: teamId },
-    include: {
-      users: {
-        include: {
-          judgeProfile: {
-            include: {
-              user: {
-                select: { name: true },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!team) {
-    return <div>Team Does Not Exist</div>
-  }
-
-  return <TeamPageClient year={year} team={team} />;
+  const teamMember = await isTeamMember(teamId)
+  return <TeamPageClient year={year} teamId={teamId} isTeamMember={teamMember} />;
 }

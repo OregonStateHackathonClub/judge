@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 
-import { createTeam, getHackathon } from "@/app/actions"
+import { createTeam } from "@/app/actions"
 import { useRouter } from "next/navigation"
 import React, { useEffect } from "react"
 import { authClient } from "@/lib/authClient"
@@ -66,11 +66,6 @@ export default function Home({params}:{
 
   // TODO: hackathon must be unique. must get the id somehow
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    let hackathon = await getHackathon(hackathonId)
-    if (hackathon == null) {
-      // Cope with failure
-      return false
-    }
 
     const teamData = {
       name: values.teamName,
@@ -78,26 +73,19 @@ export default function Home({params}:{
       description: values.description,
       contact: values.contact,
       hackathon: {
-        connect: { id: hackathon.id } //TEMP
+        connect: { id: hackathonId }
       }
     }
-    const team = await createTeam(teamData)
+    const teamId = await createTeam(teamData, true)
 
-    if (team == null) {
+    if (!teamId) {
       // Cope with failure
       return false
     }
 
-    // const usersToTeamsData = {
-    //   teamId: team.teamId,
-    //   judgeProfileId: session?.user.id
-    // }
 
-    if (!team) {
-      // Cope with failure
-    } else {
-      router.push(`/${hackathonId}/${team.teamId}`)
-    }
+
+    router.push(`/${hackathonId}/team/${teamId}`)
     
   }
 

@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/popover"
 
 import React, { useEffect, useState } from "react"
-import { getInviteCode, removeUserToTeams, updateTeam } from "@/app/actions";
+import { getInviteCode, getTeamInfo, isTeamMember, removeUserToTeams, updateTeam } from "@/app/actions";
 import { Prisma } from "@prisma/client";
 import { authClient } from "@/lib/authClient";
 import Image from "next/image"
@@ -40,34 +40,33 @@ const formSchema = z.object({
   })
 
 type TeamWithUsers = Prisma.TeamsGetPayload<{
-  include: {
+  select: {
+    teamId: true,
+    name: true,
+    description: true,
+    contact: true,
+    lookingForTeammates: true,
     users: {
-      include: {
+      select: {
         judgeProfile: {
-          include: {
+          select: {
             user: {
-              select: { name: true };
-            };
-          };
-        };
-      };
-    };
-  };
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 }>;
 
-export default function TeamPageClient({ team, year }: { team : TeamWithUsers, year : string }) {
+export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId : string, year : string, isTeamMember: boolean }) {
     const [editing, setEditing,] = useState(false);
-    const [currTeam, setCurrTeam] = useState(team);
+    const [team, setTeam] = useState<TeamWithUsers | null>(null);
     const [copied, setCopied] = useState(false)
-
-    const {
-        data: session,
-    } = authClient.useSession();
-
-    // Probably needs further security
-    const isTeamMember = currTeam.users.some(
-      (ut) => ut.judgeProfile.userId === session?.user.id
-    );
+    const [inviteCode, setInviteCode] = useState<string>("")
 
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
@@ -77,24 +76,30 @@ export default function TeamPageClient({ team, year }: { team : TeamWithUsers, y
     })
 
     useEffect(() => {
-        if (currTeam) {
+      const fetchTeam = async () => {
+        if (!team) {
+          const updatedTeam = await getTeamInfo(teamId)
+          setTeam(updatedTeam)
+
+        } else {
           form.reset({
-            teamName: currTeam.name,
-            contact: currTeam.contact ?? undefined,
-            description: currTeam.description ?? undefined,
+            teamName: team.name,
+            contact: team.contact ?? undefined,
+            description: team.description ?? undefined,
           });
         }
-      }, [team, form]);
+      }
+      fetchTeam()
 
-      const [inviteCode, setInviteCode] = useState<string>("")
-
-      useEffect(() => {
-        const fetchLink = async () => {
-          const code = await getInviteCode(currTeam.teamId)
+      const fetchLink = async () => {
+        const code = await getInviteCode(teamId)
+        if (code) {
           setInviteCode(code)
         }
-        fetchLink()
-      }, [currTeam])
+      }
+      fetchLink()
+
+      }, [team, form]);
 
     function getLink() : string {
       return `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}/invite/${inviteCode}`
@@ -115,28 +120,37 @@ export default function TeamPageClient({ team, year }: { team : TeamWithUsers, y
             contact: values.contact,
         }
 
-        let updatedTeam = await updateTeam(currTeam.teamId, data)
-        if (!updatedTeam) {
+        const res = await updateTeam(teamId, data)
+        if (!res) {
             // Cope with your failures
             console.error("Failed to update team")
             return false
         }
-        setCurrTeam(updatedTeam)
+
+        const updatedTeam = await getTeamInfo(teamId)
+        if (!updatedTeam) {
+          // Cope with your failures
+          console.error("Failed to find team")
+          return false
+      }
+
+        setTeam(updatedTeam)
         setEditing(false);
     }
 
     async function removeUser(judgeProfileId: string) {
-      await removeUserToTeams(judgeProfileId, currTeam.teamId)
+      await removeUserToTeams(judgeProfileId, teamId)
       
-      setCurrTeam(prev => ({
-        ...prev,
-        users: prev.users.filter(u => u.judgeProfileId !== judgeProfileId),
-      }))
+      setTeam(null)
+      // setTeam(prev => ({
+      //   ...prev,
+      //   users: prev.users.filter(u => u.judgeProfileId !== judgeProfileId),
+      // }))
 
     }
 
-  if (!currTeam) {
-    return <div>Team Does Not Exist</div>;
+  if (!team) {
+    return <div>Searching for Team...</div>;
   }
 
   return (
@@ -144,19 +158,19 @@ export default function TeamPageClient({ team, year }: { team : TeamWithUsers, y
       {!editing ? (
         <div className="flex">
           <div>
-            <div className="text-4xl pt-5">{currTeam.name}</div>
-            {currTeam.lookingForTeammates && (
+            <div className="text-4xl pt-5">{team.name}</div>
+            {team.lookingForTeammates && (
               <div className="pt-5 pl-10">Looking for teammates &#10004;</div>
             )}
-            {currTeam.description && (
+            {team.description && (
               <>
                 <div className="text-2xl pt-5">Description:</div>
-                <div className="pt-1 pl-10">{currTeam.description}</div>
+                <div className="pt-1 pl-10">{team.description}</div>
               </>
             )}
             <div className="text-2xl pt-5">Members:</div>
             <div className="pt-1 pl-10">
-              {currTeam.users.map((ut: any) => (
+              {team.users.map((ut: any) => (
                 <div key={ut.judgeProfileId} className="flex items-center gap-2 pb-2">
                   {ut.judgeProfile.user.name}
                   <Image
@@ -169,7 +183,7 @@ export default function TeamPageClient({ team, year }: { team : TeamWithUsers, y
                   />
                 </div>
               ))}
-              {currTeam.users.length < 4 && isTeamMember && (
+              {team.users.length < 4 && isTeamMember && (
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="rounded-4xl mt-1">+ Add Teammates</Button>
@@ -199,10 +213,10 @@ export default function TeamPageClient({ team, year }: { team : TeamWithUsers, y
                 </Popover>
               )}
             </div>
-            {currTeam.contact && (
+            {team.contact && (
               <>
                 <div className="text-2xl pt-5">Contact:</div>
-                <div className="pt-1 pl-10">{currTeam.contact}</div>
+                <div className="pt-1 pl-10">{team.contact}</div>
               </>
             )}
           </div>
@@ -292,9 +306,9 @@ export default function TeamPageClient({ team, year }: { team : TeamWithUsers, y
                     onClick={() => {
                         setEditing(false);
                         form.reset({
-                            teamName: currTeam.name,
-                            contact: currTeam.contact ?? undefined,
-                            description: currTeam.description ?? undefined,
+                            teamName: team.name,
+                            contact: team.contact ?? undefined,
+                            description: team.description ?? undefined,
                         });
                     }}
                     className="ml-4 bg-gray-200 hover:bg-gray-300 text-black rounded-4xl"
