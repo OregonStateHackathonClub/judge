@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 
 const prisma = new PrismaClient({})
 
+// Return true if user is logged in and a part of the given team. Otherwise, returns false
 export async function isTeamMember(teamId : string) : Promise<boolean> {
     const session = await auth.api.getSession({headers: await headers()});
 
@@ -95,6 +96,7 @@ export async function createTeam(teamData: Prisma.TeamsCreateInput, addSelf : bo
 }
 
 // Return true if successful. Otherwise, return false
+// Return false if user is not a member of the given team
 export async function updateTeam(teamId: string, teamData: Prisma.TeamsUpdateInput) : Promise<boolean> {
     try {
         if (!await isTeamMember(teamId)) {
@@ -115,6 +117,7 @@ export async function updateTeam(teamId: string, teamData: Prisma.TeamsUpdateInp
 }
 
 // Return teamId if successful. Otherwise, return false
+// Return false if user is not logged in
 export async function joinTeam(inviteCode : string) : Promise<string | false> {
     const session = await auth.api.getSession({headers: await headers()});
 
@@ -198,7 +201,8 @@ export async function getTeamInfo(teamId : string) {
       return team
 }
 
-// Return true if successful. Otherwise, return false
+// Returns true if successful. Otherwise, return false
+// Return false if user is not a member of the given team
 export async function removeUserToTeams(judgeProfileId: string, teamId: string) : Promise<boolean> {
     try {
 
@@ -223,6 +227,7 @@ export async function removeUserToTeams(judgeProfileId: string, teamId: string) 
 }
 
 // Return invite code if successful. Otherwise, return false
+// Return false if user is not a member of the given team
 export async function getInviteCode(teamId: string) : Promise<string | false> {
     if (!await isTeamMember(teamId)) {
         return false
