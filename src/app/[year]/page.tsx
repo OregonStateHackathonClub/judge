@@ -4,7 +4,7 @@ import SubmissionsClient from "./components/submission_client";
 
 export default async function Page({ params }: { params: { year: string } }) {
   const hackathon = await prisma.hackathons.findFirst({
-    where: { year: params.year },
+    where: { id: params.year },
     include: {
       submissions: {
         include: {

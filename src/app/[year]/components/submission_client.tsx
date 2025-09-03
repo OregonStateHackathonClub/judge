@@ -79,7 +79,7 @@ export default function SubmissionsClient({
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="flex flex-col items-center text-center gap-4">
             <span className="inline-flex items-center rounded-full border border-neutral-800 bg-neutral-900/60 px-3 py-1 text-xs tracking-wide text-neutral-300">
-              Oregon State University • BeaverHacks
+              Oregon State University
             </span>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white">
               BeaverHacks {year}
