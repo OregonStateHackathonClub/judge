@@ -88,11 +88,18 @@ export default function SubmissionsClient({
               Explore projects, filter by track, and discover this year’s builds.
             </p>
 
-            {/* Quick actions / filter */}
+              {/* Quick actions / filter */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              {/* The "Filter by track" div is now first */}
+              <div className="inline-flex items-center gap-2 rounded-2xl border border-neutral-800 bg-neutral-900/70 px-4 py-2 text-sm text-neutral-300">
+                <Filter className="h-4 w-4" />
+                Filter by track:
+              </div>
+
+              {/* The select dropdown is now second */}
               <div className="relative">
                 <select
-                  className="peer appearance-none rounded-2xl border border-neutral-800 bg-neutral-900/70 px-4 py-2 pr-10 text-sm text-neutral-200 outline-none transition focus:border-orange-500/70"
+                  className="peer appearance-none rounded-2xl border border-neutral-800 bg-neutral-900/70 px-4 py-2 pr-10 text-sm text-neutral-300 outline-none transition focus:border-orange-500/70"
                   value={selectedTrack}
                   onChange={handleTrackChange}
                 >
@@ -104,10 +111,6 @@ export default function SubmissionsClient({
                   ))}
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-2xl border border-neutral-800 bg-neutral-900/70 px-3 py-2 text-xs text-neutral-300">
-                <Filter className="h-4 w-4" />
-                Filter by track
               </div>
             </div>
           </div>
