@@ -170,7 +170,7 @@ export default function SubmissionsClient({
             return (
               <Card
                 key={submission.id}
-                className="group cursor-pointer overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/50 transition hover:border-neutral-700 hover:bg-neutral-900"
+                className="group cursor-pointer overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/50 transition hover:border-orange-500/50 hover:bg-neutral-900"
                 onClick={() => handleProjectClick(submission.id)}
               >
                 {/* Image */}
