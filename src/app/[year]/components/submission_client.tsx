@@ -99,7 +99,7 @@ export default function SubmissionsClient({
               {/* The select dropdown is now second */}
               <div className="relative">
                 <select
-                  className="peer appearance-none rounded-2xl border border-neutral-800 bg-neutral-900/70 px-4 py-2 pr-10 text-sm text-neutral-300 outline-none transition focus:border-orange-500/70"
+                  className="peer appearance-none rounded-2xl border border-neutral-800 bg-neutral-900/70 px-4 py-2 pr-10 text-sm text-neutral-300 outline-none transition focus:border-orange-500/70 hover:cursor-pointer"
                   value={selectedTrack}
                   onChange={handleTrackChange}
                 >
@@ -236,11 +236,11 @@ export default function SubmissionsClient({
                           href={submission.githubURL}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 hover:border-neutral-700 hover:bg-neutral-800"
+                          className="group inline-flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition-colors duration-200 hover:border-blue-500 hover:bg-blue-500/10 hover:text-blue-500"
                           onClick={(e) => e.stopPropagation()}
                           title="View source"
                         >
-                          <Github className="h-4 w-4" />
+                          <Github className="h-4 w-4 text-neutral-200 transition-colors duration-200 group-hover:text-blue-500" />
                           GitHub
                         </Link>
                       )}
@@ -250,18 +250,18 @@ export default function SubmissionsClient({
                           href={submission.ytVideo}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 hover:border-neutral-700 hover:bg-neutral-800"
+                          className="group inline-flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition-colors duration-200 hover:border-red-600 hover:bg-red-900/10 hover:text-red-600"
                           onClick={(e) => e.stopPropagation()}
                           title="Watch demo"
                         >
-                          <Youtube className="h-4 w-4" />
+                          <Youtube className="h-4 w-4 text-neutral-200 transition-colors duration-200 group-hover:text-red-600" />
                           YouTube
                         </Link>
                       )}
                     </div>
 
                     <button
-                      className="ml-auto inline-flex items-center rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition hover:border-orange-500/50 hover:bg-neutral-800"
+                      className="ml-auto inline-flex items-center rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition hover:border-orange-500/50 hover:bg-neutral-800 hover:cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleProjectClick(submission.id);
