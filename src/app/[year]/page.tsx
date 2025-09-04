@@ -1,10 +1,20 @@
 import { prisma } from "@/lib/prisma";
 import SubmissionsClient from "./components/submission_client";
+import Link from "next/link";
+import { SearchX, ArrowLeft } from "lucide-react";
 
-export default async function Page({ params }: { params: { year: string } }) {
+// Define a clear type for the component's props
+type PageProps = {
+  params: {
+    year: string;
+  };
+};
+
+export default async function Page({ params }: PageProps) {
   const hackathon = await prisma.hackathons.findFirst({
     where: { id: params.year },
     include: {
+      tracks: true,
       submissions: {
         include: {
           trackLinks: {
@@ -17,23 +27,43 @@ export default async function Page({ params }: { params: { year: string } }) {
           score: "desc",
         },
       },
-      // Fetch the hackathon's associated tracks in the same query 🚀
-      tracks: true,
     },
   });
 
+  // Use a guard clause for the "not found" case
   if (!hackathon) {
     return (
-      <div className="text-center mt-20 text-red-600 text-2xl">
-        No hackathon found for year {params.year}.
+      <div className="flex min-h-[calc(100vh-80px)] flex-col items-center justify-center bg-neutral-900 p-4 text-center">
+        <div className="max-w-md">
+          <SearchX
+            className="mx-auto h-16 w-16 text-neutral-600"
+            aria-hidden="true"
+          />
+          <h1 className="mt-6 text-3xl font-bold tracking-tight text-white">
+            Hackathon Not Found
+          </h1>
+          <p className="mt-3 text-base text-neutral-400">
+            Sorry, we couldn't find any hackathon data for the year{" "}
+            <strong>{params.year}</strong>. It might not exist or may be
+            archived.
+          </p>
+          <Link
+            href="/"
+            className="mt-8 inline-flex items-center rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:border-orange-500/50 hover:text-orange-400"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Return Home
+          </Link>
+        </div>
       </div>
     );
   }
 
+  // Pass the fetched data to the client component for rendering
   return (
     <SubmissionsClient
       hackathon={hackathon}
-      tracks={hackathon.tracks} // Pass the included tracks to the client
+      tracks={hackathon.tracks}
       year={params.year}
     />
   );
