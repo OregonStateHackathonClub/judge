@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
-import { ProjectLinks } from "@/components/projectLinks"; // Import the new component
+import { ProjectLinks } from "@/components/projectLinks";
+import { ImageCarousel } from "@/components/imageCarousel";
 
 // This is an async Server Component (no "use client")
 export default async function ProjectPage(props: {
@@ -83,20 +84,21 @@ export default async function ProjectPage(props: {
                 Team: {submission.Team[0].name}
               </div>
             )}
-            {/* Use the new Client Component for interactive links */}
             <ProjectLinks
               githubURL={submission.githubURL}
               ytVideo={submission.ytVideo}
             />
           </div>
-          
         </div>
 
         <div className="mb-8 overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
-          <img
-            src={submission.images?.[0] || "/beaver.png"}
-            alt={`${submission.name} showcase`}
-            className="aspect-video w-full object-cover"
+          <ImageCarousel
+            altText={`${submission.name} showcase`}
+            imageUrls={
+              submission.images?.length > 0
+                ? submission.images
+                : ["/beaver.png"]
+            }
           />
         </div>
 
@@ -126,7 +128,7 @@ export default async function ProjectPage(props: {
                   <ul className="space-y-3">
                     {submission.Team[0].users.map((member: any) => (
                       <li
-                        key={member.userId} // Key prop fix
+                        key={member.userId}
                         className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
                       >
                         {member.user?.image && (
@@ -150,26 +152,6 @@ export default async function ProjectPage(props: {
                 </CardContent>
               </Card>
             )}
-
-            {/* {canViewScores && (
-              <Card className="rounded-2xl border border-neutral-800 bg-neutral-900/60">
-                <CardHeader>
-                  <CardTitle className="text-lg text-white">
-                    Scoring Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm text-neutral-300">
-                    <div className="flex justify-between">
-                      <span>Overall Score</span>
-                      <span className="font-semibold text-white">
-                        {submission.score ?? 0}/100
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )} */}
           </div>
         </div>
       </main>
