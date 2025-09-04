@@ -20,7 +20,7 @@ import {
   Tag,
 } from "lucide-react";
 import { ProjectLinks } from "@/components/projectLinks";
-
+import SubmissionCard from "@/components/submissionCard";
 
 interface SubmissionsClientProps {
   hackathon: any;
@@ -72,8 +72,9 @@ export default function SubmissionsClient({
         className="relative isolate overflow-hidden"
         style={{
           // you can set hackathon.bannerImage later to customize per year
-          backgroundImage:
-            `linear-gradient(to bottom, rgba(10,10,10,.65), rgba(10,10,10,.95)), url(${hackathon?.bannerImage || "/hero-dark-texture.jpg"})`,
+          backgroundImage: `linear-gradient(to bottom, rgba(10,10,10,.65), rgba(10,10,10,.95)), url(${
+            hackathon?.bannerImage || "/hero-dark-texture.jpg"
+          })`,
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
@@ -87,14 +88,14 @@ export default function SubmissionsClient({
               BeaverHacks {year}
             </h1>
             <p className="max-w-2xl text-sm sm:text-base text-neutral-300">
-              Explore projects, filter by track, and discover this year’s builds.
+              Explore projects, filter by track, and discover this year’s
+              builds.
             </p>
 
             {/* Quick actions / filter */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               {/* New single container for the filter */}
               <div className="inline-flex items-center rounded-2xl border border-neutral-800 bg-neutral-900/70 text-sm text-neutral-300 transition-all focus-within:border-orange-500/70">
-                
                 {/* Label Section */}
                 <div className="inline-flex items-center gap-2 px-4 py-2">
                   <Filter className="h-4 w-4" />
@@ -120,7 +121,6 @@ export default function SubmissionsClient({
                   </select>
                   <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
                 </div>
-
               </div>
             </div>
           </div>
@@ -158,7 +158,9 @@ export default function SubmissionsClient({
                 ) : (
                   <p className="text-center text-xs text-neutral-500">
                     Add sponsor logos later by populating{" "}
-                    <code className="rounded bg-neutral-800 px-1 py-0.5">logos from database</code>
+                    <code className="rounded bg-neutral-800 px-1 py-0.5">
+                      logos from database
+                    </code>
                   </p>
                 )}
               </div>
@@ -171,125 +173,13 @@ export default function SubmissionsClient({
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         {/* Submissions grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-          {filteredSubmissions.map((submission: any) => {
-            const img =
-              (Array.isArray(submission.images) && submission.images[0]) ||
-              submission.images ||
-              "/@/public/beaver.png";
-
-            return (
-              <Card
-                key={submission.id}
-                className="group cursor-pointer overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900/60 backdrop-blur supports-[backdrop-filter]:bg-neutral-900/50 transition hover:border-orange-500/50 hover:bg-neutral-900"
-                onClick={() => handleProjectClick(submission.id)}
-              >
-                {/* Image */}
-                <div className="relative h-40 w-full overflow-hidden bg-neutral-900">
-                  <img
-                    src={img}
-                    alt={`${submission.name} cover`}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-950/60 to-transparent" />
-                </div>
-
-                {/* Body */}
-                <CardHeader className="px-4 py-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <CardTitle className="text-xl font-bold text-white leading-snug line-clamp-2">
-                      {submission.name}
-                    </CardTitle>
-                    {/* <div className="inline-flex items-center gap-1 rounded-full bg-neutral-800/60 px-2 py-1">
-                      <Star className="h-3.5 w-3.5 text-yellow-400" />
-                      <span className="text-xs text-neutral-300">
-                        {submission.score ?? 0}
-                      </span>
-                    </div> */}
-                  </div>
-                  
-
-                  {/* Track badges */}
-                  {submission.trackLinks?.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {submission.trackLinks.map((link: any) => (
-                        <span
-                          key={link.trackId}
-                          className="inline-flex items-center gap-1 rounded-full border border-neutral-800 bg-neutral-900 px-2 py-0.5 text-[10px] uppercase tracking-wide text-neutral-300"
-                          onClick={(e) => e.stopPropagation()}
-                          title={link.track?.name}
-                        >
-                          <Tag className="h-3 w-3" />
-                          {link.track?.name}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {submission.miniDescription && (
-                    <CardDescription className="mt-1 text-sm text-neutral-400 line-clamp-3">
-                      {submission.miniDescription}
-                    </CardDescription>
-                  )}
-                </CardHeader>
-
-                {/* <CardContent className="px-4 pb-2 pt-0">
-                  <div className="text-xs text-neutral-400 line-clamp-2">
-                    {submission.comments
-                      ? submission.comments
-                      : "No judge comments yet."}
-                  </div>
-                </CardContent> */}
-
-                <CardFooter className="px-4 pb-4 pt-2">
-                  <div className="flex w-full items-center justify-between gap-3">
-                    {/* <div className="flex items-center gap-3">
-                      {submission.githubURL && (
-                        <Link
-                          href={submission.githubURL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group inline-flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition-colors duration-200 hover:border-blue-500 hover:bg-blue-500/10 hover:text-blue-500"
-                          onClick={(e) => e.stopPropagation()}
-                          title="View source"
-                        >
-                          <Github className="h-4 w-4 text-neutral-200 transition-colors duration-200 group-hover:text-blue-500" />
-                          GitHub
-                        </Link>
-                      )}
-
-                      {submission.ytVideo && (
-                        <Link
-                          href={submission.ytVideo}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="group inline-flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition-colors duration-200 hover:border-red-600 hover:bg-red-900/10 hover:text-red-600"
-                          onClick={(e) => e.stopPropagation()}
-                          title="Watch demo"
-                        >
-                          <Youtube className="h-4 w-4 text-neutral-200 transition-colors duration-200 group-hover:text-red-600" />
-                          YouTube
-                        </Link>
-                      )}
-                    </div> */}
-                    <ProjectLinks
-                      githubURL={submission.githubURL}
-                      ytVideo={submission.ytVideo}
-                    />
-
-                    <button
-                      className="ml-auto inline-flex items-center rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition hover:border-orange-500/50 hover:bg-neutral-800 hover:cursor-pointer"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleProjectClick(submission.id);
-                      }}
-                    >
-                      Open →
-                    </button>
-                  </div>
-                </CardFooter>
-              </Card>
-            );
-          })}
+          {filteredSubmissions.map((submission: any) => (
+            <SubmissionCard
+              key={submission.id}
+              submission={submission}
+              onClick={() => handleProjectClick(submission.id)}
+            />
+          ))}
         </div>
 
         {/* No results */}
@@ -301,7 +191,8 @@ export default function SubmissionsClient({
 
         {/* Footer note / patterns hook */}
         <div className="mt-12 text-center text-xs text-neutral-500">
-          Interested in becoming a sponsor? Contact us at sponsor@beaverhacks.org
+          Interested in becoming a sponsor? Contact us at
+          sponsor@beaverhacks.org
         </div>
       </div>
     </div>
