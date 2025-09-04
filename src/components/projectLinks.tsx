@@ -20,7 +20,7 @@ export function ProjectLinks({ githubURL, ytVideo }: ProjectLinksProps) {
           onClick={(e) => e.stopPropagation()}
           title="View source"
         >
-          <Github className="h-4 w-4 text-neutral-200 transition-colors duration-200 group-hover:text-blue-500" />
+          <Github className="h-4 w-5 text-neutral-200 transition-colors duration-200 group-hover:text-blue-500" />
           GitHub
         </Link>
       )}
@@ -33,7 +33,7 @@ export function ProjectLinks({ githubURL, ytVideo }: ProjectLinksProps) {
           onClick={(e) => e.stopPropagation()}
           title="Watch demo"
         >
-          <Youtube className="h-4 w-4 text-neutral-200 transition-colors duration-200 group-hover:text-red-600" />
+          <Youtube className="h-4 w-5 text-neutral-200 transition-colors duration-200 group-hover:text-red-600" />
           YouTube
         </Link>
       )}

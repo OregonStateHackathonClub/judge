@@ -71,6 +71,11 @@ export default async function ProjectPage(props: {
               </Badge>
             ))}
           </div>
+          {submission.miniDescription && (
+            <p className="mt-6 max-w-3xl text-base text-neutral-300">
+              {submission.miniDescription}
+            </p>
+          )}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
             {submission.Team?.[0] && (
               <div className="inline-flex items-center gap-2 text-neutral-400">
@@ -84,6 +89,7 @@ export default async function ProjectPage(props: {
               ytVideo={submission.ytVideo}
             />
           </div>
+          
         </div>
 
         <div className="mb-8 overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
