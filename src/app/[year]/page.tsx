@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import SubmissionsClient from "./components/submission_client";
 
-
 export default async function Page({ params }: { params: { year: string } }) {
   const hackathon = await prisma.hackathons.findFirst({
     where: { id: params.year },
@@ -10,14 +9,16 @@ export default async function Page({ params }: { params: { year: string } }) {
         include: {
           trackLinks: {
             include: {
-              track: true
-            }
-          }
+              track: true,
+            },
+          },
         },
         orderBy: {
-          score: 'desc'
-        }
+          score: "desc",
+        },
       },
+      // Fetch the hackathon's associated tracks in the same query 🚀
+      tracks: true,
     },
   });
 
@@ -29,15 +30,11 @@ export default async function Page({ params }: { params: { year: string } }) {
     );
   }
 
-  const tracks = await prisma.tracks.findMany({
-    where: { hackathonId: hackathon.id },
-  });
-
   return (
-    <SubmissionsClient 
-      hackathon={hackathon} 
-      tracks={tracks} 
-      year={params.year} 
+    <SubmissionsClient
+      hackathon={hackathon}
+      tracks={hackathon.tracks} // Pass the included tracks to the client
+      year={params.year}
     />
   );
 }
