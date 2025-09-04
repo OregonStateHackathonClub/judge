@@ -7,16 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  id            String     @id @default(cuid())
+model User {
+  id            String    @id @default(cuid())
   name          String
   email         String
   emailVerified Boolean
   image         String?
   createdAt     DateTime
   updatedAt     DateTime
-  sessions      Sessions[]
-  accounts      Accounts[]
+  sessions      Session[]
+  accounts      Account[]
 
   judgeProfile JudgeProfile?
 
@@ -26,14 +26,14 @@ model Users {
 
 model JudgeProfile {
   userId String @id
-  user   Users  @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
 
   teams UsersToTeams[]
 
   @@map("judgeProfile")
 }
 
-model Sessions {
+model Session {
   id        String   @id @default(cuid())
   expiresAt DateTime
   token     String
@@ -42,18 +42,18 @@ model Sessions {
   ipAddress String?
   userAgent String?
   userId    String
-  user      Users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
   @@map("session")
 }
 
-model Accounts {
+model Account {
   id                    String    @id @default(cuid())
   accountId             String
   providerId            String
   userId                String
-  user                  Users     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -68,7 +68,7 @@ model Accounts {
   @@map("account")
 }
 
-model Verifications {
+model Verification {
   id         String    @id @default(cuid())
   identifier String
   value      String
@@ -80,9 +80,8 @@ model Verifications {
 }
 
 model Hackathons {
-  id          String        @id @default(cuid())
+  id          String        @id
   name        String        @unique
-  year        String
   sponsors    String
   rubric      Json
   description String?
@@ -104,10 +103,11 @@ model Teams {
   hackathonId         String
 
   //relations
-  leader     Accounts?      @relation(fields: [leaderId], references: [id])
+  leader     Account?       @relation(fields: [leaderId], references: [id])
   submission Submissions?   @relation(fields: [submissionId], references: [id])
   hackathon  Hackathons     @relation(fields: [hackathonId], references: [id])
   users      UsersToTeams[]
+  invites    Invites[]
 
   @@map("teams")
 }
@@ -166,4 +166,13 @@ model TracksToSubmissions {
 
   @@id([trackId, submissionId])
   @@map("mergeTrack")
+}
+
+model Invites {
+  teamId String
+  code   String @id @default(cuid())
+
+  teams Teams? @relation(fields: [teamId], references: [teamId])
+
+  @@index([teamId])
 }
