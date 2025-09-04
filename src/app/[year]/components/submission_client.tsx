@@ -19,6 +19,8 @@ import {
   Star,
   Tag,
 } from "lucide-react";
+import { ProjectLinks } from "@/components/projectLinks";
+
 
 interface SubmissionsClientProps {
   hackathon: any;
@@ -232,7 +234,7 @@ export default function SubmissionsClient({
 
                 <CardFooter className="px-4 pb-4 pt-2">
                   <div className="flex w-full items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
+                    {/* <div className="flex items-center gap-3">
                       {submission.githubURL && (
                         <Link
                           href={submission.githubURL}
@@ -260,7 +262,11 @@ export default function SubmissionsClient({
                           YouTube
                         </Link>
                       )}
-                    </div>
+                    </div> */}
+                    <ProjectLinks
+                      githubURL={submission.githubURL}
+                      ytVideo={submission.ytVideo}
+                    />
 
                     <button
                       className="ml-auto inline-flex items-center rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition hover:border-orange-500/50 hover:bg-neutral-800 hover:cursor-pointer"
