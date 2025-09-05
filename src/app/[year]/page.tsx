@@ -11,6 +11,9 @@ type PageProps = {
 };
 
 export default async function Page({ params }: PageProps) {
+
+  // Artificially delay loading for 100 seconds (100000ms) to see the loading UI
+  // await new Promise((resolve) => setTimeout(resolve, 100000));
   const hackathon = await prisma.hackathons.findFirst({
     where: { id: params.year },
     include: {

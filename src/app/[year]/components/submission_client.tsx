@@ -22,6 +22,7 @@ import {
 import { ProjectLinks } from "@/components/projectLinks";
 import SubmissionCard from "@/components/submissionCard";
 
+
 interface SubmissionsClientProps {
   hackathon: any;
   tracks: any[];
