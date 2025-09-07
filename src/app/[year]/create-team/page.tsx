@@ -21,7 +21,7 @@ import { useForm } from "react-hook-form"
 
 import { createTeam } from "@/app/actions"
 import { useRouter } from "next/navigation"
-import React, { useEffect, useState } from "react"
+import React, { useEffect } from "react"
 import { authClient } from "@/lib/authClient"
 import { motion, AnimatePresence } from "framer-motion"
 

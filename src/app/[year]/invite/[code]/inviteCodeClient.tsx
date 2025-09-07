@@ -9,17 +9,6 @@ export default function InvitePageClient({ code, year }: { code : string, year: 
 
     const [failed, setFailed] = useState(false)
 
-    async function addToTeam() {
-        const teamId = await joinTeam(code)
-        if (!teamId) {
-            console.error("Could not join team")
-            setFailed(true)
-            return
-        }
-
-        await router.push(`/${year}/team/${teamId}`);
-      }
-
     const router = useRouter()
 
     const {
@@ -27,6 +16,17 @@ export default function InvitePageClient({ code, year }: { code : string, year: 
     } = authClient.useSession();
 
     useEffect(() => {
+        async function addToTeam() {
+            const teamId = await joinTeam(code)
+            if (!teamId) {
+                console.error("Could not join team")
+                setFailed(true)
+                return
+            }
+    
+            await router.push(`/${year}/team/${teamId}`);
+        }
+
         if (!isPending && session) {
             addToTeam();
           } else if (!isPending && !session) {

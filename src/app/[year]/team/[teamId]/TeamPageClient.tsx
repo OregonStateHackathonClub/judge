@@ -20,9 +20,27 @@ const formSchema = z.object({
   description: z.string().optional(),
 })
 
+type TeamInfo = {
+  teamId: string;
+  name: string;
+  description: string | null;
+  contact: string | null;
+  lookingForTeammates: boolean;
+  users: TeamUser[];
+};
+
+type TeamUser = {
+  judgeProfileId: string;
+  judgeProfile: {
+    user: {
+      name: string;
+    };
+  } | null;
+};
+
 export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId: string, year: string, isTeamMember: boolean }) {
   const [editing, setEditing] = useState(false)
-  const [team, setTeam] = useState<any>(null)
+  const [team, setTeam] = useState<TeamInfo | null>(null)
   const [inviteCode, setInviteCode] = useState("")
   const [copied, setCopied] = useState(false)
   const [open, setOpen] = useState(false);
@@ -75,11 +93,11 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
 
   const removeUser = async (judgeProfileId: string) => {
     await removeUserToTeams(judgeProfileId, teamId)
-    setTeam((prevTeam: any) => {
+    setTeam((prevTeam) => {
       if (!prevTeam) return prevTeam
       return {
         ...prevTeam,
-        users: prevTeam.users.filter((u: any) => u.judgeProfileId !== judgeProfileId)
+        users: prevTeam.users.filter((u) => u.judgeProfileId !== judgeProfileId)
       }
     })
   }
@@ -111,9 +129,9 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
       <div className="bg-white rounded-xl shadow-md p-6">
         <h2 className="text-xl font-semibold mb-2">Members</h2>
         <ul className="space-y-2">
-          {team.users.map((u: any) => (
+          {team.users.map((u: TeamUser) => (
             <li key={u.judgeProfileId} className="flex items-center justify-between">
-              <span>{u.judgeProfile.user.name}</span>
+              <span>{u.judgeProfile?.user.name}</span>
               {isTeamMember && (
                 <Image
                   src="/trashcan-red.png"

@@ -230,7 +230,7 @@ export async function removeUserToTeams(judgeProfileId: string, teamId: string) 
             return false
         }
 
-        const deleted = await prisma.usersToTeams.delete({
+        await prisma.usersToTeams.delete({
             where: {
             teamId_judgeProfileId: {
                 judgeProfileId,
