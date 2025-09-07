@@ -64,7 +64,6 @@ export default function Home({params}:{
   }
   
 
-  // TODO: hackathon must be unique. must get the id somehow
   async function onSubmit(values: z.infer<typeof formSchema>) {
 
     const teamData = {
@@ -80,6 +79,7 @@ export default function Home({params}:{
 
     if (!teamId) {
       // Cope with failure
+      console.error("Failed to creat team")
       return false
     }
 

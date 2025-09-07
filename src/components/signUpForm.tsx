@@ -14,6 +14,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { signUp } from "@/lib/authClient";
 import { useRouter } from "next/navigation";
+import { createJudgeProfile } from "@/app/actions";
 
 export function SignUpForm() {
 	const [firstName, setFirstName] = useState("");
@@ -117,7 +118,12 @@ export function SignUpForm() {
                                         console.log(ctx.error.message);
 									},
 									onSuccess: async () => {
-										router.push("/");
+										const res = await createJudgeProfile();
+										if (res) {
+											router.push("/");
+										} else {
+											console.error("Database connection failed");
+										}
 									},
 								},
 							});

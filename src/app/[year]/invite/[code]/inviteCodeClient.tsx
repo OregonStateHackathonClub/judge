@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react"
 import { joinTeam } from "@/app/actions";
-import { Prisma } from "@prisma/client";
 import { authClient } from "@/lib/authClient";
 import { useRouter } from "next/navigation"
 

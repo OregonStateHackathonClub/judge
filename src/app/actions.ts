@@ -42,10 +42,15 @@ export async function isTeamMember(teamId : string) : Promise<boolean> {
 }
 
 // Return true if successful. Otherwise, return false
-export async function createUser(userData: Prisma.JudgeProfileCreateInput) : Promise<boolean> {
+export async function createJudgeProfile() : Promise<boolean> {
     try {
+        const session = await auth.api.getSession({headers: await headers()});
+        if (!session) {
+            return false
+        }
+
         await prisma.judgeProfile.create({
-            data: userData,
+            data: {userId: session.user.id},
         })
 
         return true
@@ -55,21 +60,32 @@ export async function createUser(userData: Prisma.JudgeProfileCreateInput) : Pro
     }
 }
 
-// Perhaps only allow if user is not already in a team??
 // Return teamId if successful. false if unsucessful
 export async function createTeam(teamData: Prisma.TeamsCreateInput, addSelf : boolean = false) : Promise<string | false> {
     try {
-        let userId = null;
-        if (addSelf) {
-            const session = await auth.api.getSession({headers: await headers()});
-    
-            if (!session) {
-                return false
-            }
-
-            userId = session.user.id
+        const session = await auth.api.getSession({headers: await headers()});
+        if (!session) {
+            return false
         }
 
+        const userId = session.user.id
+
+        const existingTeam = await prisma.teams.findFirst({
+            where: {
+                users: {
+                    some: {
+                        judgeProfile: {
+                            userId: userId
+                        }
+                    },
+                }
+            }
+        })
+
+        if (existingTeam) {
+            console.log("User is already in team:", existingTeam.name)
+            return false
+        }
 
         const newTeam = await prisma.teams.create({
             data: teamData,
@@ -250,7 +266,6 @@ export async function getInviteCode(teamId: string) : Promise<string | false> {
     return invite.code
 }
 
-// Fine?? Needs more security??
 // Return teamId if successful. Otherwise, return false
 export async function getTeamIdFromInvite(inviteCode: string): Promise<string | false> {
     const team = await prisma.teams.findFirst({
