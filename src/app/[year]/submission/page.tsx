@@ -68,11 +68,13 @@ export default function DraftForm() {
       </Form>
       <div className="min-w-76">
         <Card className="flex flex-col justify-between transition-shadow overflow-hidden shadow-lg sticky top-4">
-          <img
-            src={form.watch("photos") || "/beaver.png"}
-            alt={`${form.watch("name")} image`}
-            className="h-48 w-full object-cover border-b"
-          />
+          <div className="relative w-full aspect-[4/3] overflow-hidden border-b">
+            <img
+              src={form.watch("photos") || "/beaver.png"}
+              alt={`${form.watch("name")} image`}
+              className="absolute inset-0 m-auto max-h-full max-w-full object-contain"
+            />
+          </div>
           <CardHeader className="w-full h-full">
             <CardTitle>{form.watch("name") || "Title Preview"}</CardTitle>
             {/* Display track names FIX THIS FOR PREVIEW */}

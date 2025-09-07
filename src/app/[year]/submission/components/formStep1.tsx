@@ -55,6 +55,41 @@ export default function StepOne({ form }: { form: FormType}) {
             </FormItem>
           )}
         />
+        <div className="mt-6">
+          <FormField
+            control={form.control}
+            name="photos"
+            render={({ field }) => (
+              <FormItem className="w-full">
+                <FormLabel>Upload Images</FormLabel>
+                <FormControl>
+                  {}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="block w-full text-sm text-zinc-700 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-600 file:px-3 file:py-2 file:text-white hover:file:bg-indigo-700"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null
+                      if (file) {
+                        const url = URL.createObjectURL(file)
+                        if (typeof field.value === "string" && field.value.startsWith("blob:")) {
+                          try { URL.revokeObjectURL(field.value); } catch {}
+                        }
+                        field.onChange(url);
+                      } else {
+                        field.onChange("")
+                      }
+                    }}
+                  />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+          
+        </div>
         <Separator className="mt-10" />
       </div>
     )
