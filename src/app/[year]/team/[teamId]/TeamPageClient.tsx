@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
-import { getInviteCode, getTeamInfo, isTeamMember, removeUserToTeams, updateTeam } from "@/app/actions"
+import { getInviteCode, getTeamInfo, resetInviteCode, removeUserToTeams, updateTeam } from "@/app/actions"
 
 const formSchema = z.object({
   teamName: z.string().min(4),
@@ -25,6 +25,7 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
   const [team, setTeam] = useState<any>(null)
   const [inviteCode, setInviteCode] = useState("")
   const [copied, setCopied] = useState(false)
+  const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -129,15 +130,41 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
 
         {/* Invite Link */}
         {team.users.length < 4 && isTeamMember && (
-          <Popover>
+          <Popover open={open} onOpenChange={setOpen} >
             <PopoverTrigger asChild>
-              <Button variant="outline" className="mt-4 rounded-xl w-full">+ Add Teammates</Button>
+              <Button variant="outline" className="mt-4 rounded-xl w-full">
+                + Add Teammates
+              </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80">
+            <PopoverContent className="w-80 relative">
+              <button
+                className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded"
+                onClick={async () => {
+                  const success = await resetInviteCode(inviteCode); // make sure inviteCode is available
+                  if (success) {
+                    const fetchInvite = async () => {
+                      const code = await getInviteCode(teamId)
+                      if (code) setInviteCode(code)
+                    }
+                    fetchInvite();
+                  }
+                  else alert("Failed to remove invite.");
+                }}
+              >
+                <span className="text-2xl">&#10227;</span>
+              </button>
+          
               <p className="text-sm mb-2">Send this invite link to friends:</p>
               <div className="flex gap-2">
-                <input type="text" value={getLink()} readOnly className="flex-1 px-2 py-1 border rounded" />
-                <Button size="sm" onClick={copyLink}>{copied ? "Copied!" : "Copy"}</Button>
+                <input
+                  type="text"
+                  value={getLink()}
+                  readOnly
+                  className="flex-1 px-2 py-1 border rounded"
+                />
+                <Button size="sm" onClick={copyLink}>
+                  {copied ? "Copied!" : "Copy"}
+                </Button>
               </div>
             </PopoverContent>
           </Popover>

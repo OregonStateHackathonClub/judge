@@ -288,3 +288,22 @@ export async function getTeamIdFromInvite(inviteCode: string): Promise<string | 
     
     return false
 }
+
+export async function resetInviteCode(inviteCode: string): Promise<boolean> {
+    const teamId = await getTeamIdFromInvite(inviteCode);
+    
+    if (!teamId) return false
+    if (!await isTeamMember(teamId)) return false
+
+    try {
+        await prisma.invites.delete({
+            where: {
+                code: inviteCode
+            }
+        })
+        return true
+    } catch (error) {
+        console.error(error)
+        return false
+    }
+}

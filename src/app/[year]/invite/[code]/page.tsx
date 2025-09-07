@@ -11,7 +11,7 @@ export default async function Page({ params }: { params: {year: string, code: st
 
   if (!teamId) {
     // Cope with your failures
-    console.error("Failed to get dd from invite code")
+    console.error("Failed to get id from invite code")
     return <div>Invite Failed</div>
   }
 
