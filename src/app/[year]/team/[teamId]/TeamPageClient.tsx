@@ -74,7 +74,13 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
 
   const removeUser = async (judgeProfileId: string) => {
     await removeUserToTeams(judgeProfileId, teamId)
-    setTeam(null)
+    setTeam((prevTeam: any) => {
+      if (!prevTeam) return prevTeam
+      return {
+        ...prevTeam,
+        users: prevTeam.users.filter((u: any) => u.judgeProfileId !== judgeProfileId)
+      }
+    })
   }
 
   if (!team) return <div className="text-center py-10">Loading Team...</div>

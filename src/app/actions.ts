@@ -160,25 +160,29 @@ export async function joinTeam(inviteCode : string) : Promise<string | false> {
     if (team.users.length >= 4) {
         return false
     }
-
-    const connection = await prisma.usersToTeams.create({
-        data: {
-            team: {
-                connect: {
-                    teamId: team.teamId
+    try {
+        const connection = await prisma.usersToTeams.create({
+            data: {
+                team: {
+                    connect: {
+                        teamId: team.teamId
+                    }
+                },
+                judgeProfile: {
+                    connect: {
+                        userId: session.user.id
+                    }
                 }
             },
-            judgeProfile: {
-                connect: {
-                    userId: session.user.id
-                }
-            }
-        },
-    })
-
-    if (connection) {
-        return team.teamId
-    } else {
+        })
+    
+        if (connection) {
+            return team.teamId
+        } else {
+            return false
+        }
+    } catch (error) {
+        console.error(error);
         return false
     }
 }

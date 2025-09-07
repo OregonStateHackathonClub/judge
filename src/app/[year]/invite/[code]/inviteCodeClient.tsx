@@ -17,7 +17,7 @@ export default function InvitePageClient({ code, year }: { code : string, year: 
             return
         }
 
-        router.push(`/${year}/team/${teamId}`);
+        await router.push(`/${year}/team/${teamId}`);
       }
 
     const router = useRouter()
@@ -27,13 +27,11 @@ export default function InvitePageClient({ code, year }: { code : string, year: 
     } = authClient.useSession();
 
     useEffect(() => {
-        if (!isPending && !session) {
-        router.push("/log-in");
-        }
-
-        if (session) {
-          addToTeam()
-        }
+        if (!isPending && session) {
+            addToTeam();
+          } else if (!isPending && !session) {
+            router.push("/log-in");
+          }
 
     }, [isPending, session, router]);
 
