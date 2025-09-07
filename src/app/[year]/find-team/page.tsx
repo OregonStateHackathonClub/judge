@@ -2,44 +2,52 @@ import { Suspense } from "react";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
 
-// TODO: Add filter: add team description
 async function Teams() {
   const data = await GetTeams();
 
-  return(
-    <ul className="pb-2.5">
-      {
-        data.map( (team, index) => (
-          <Link key={team.teamId} href={`team/${team.teamId}`}>
-            <li className="pl-10 pt-2.5 pb-2.5 hover:bg-gray-100">{team.name}</li>
-          </Link>
+  return (
+    <div className="grid gap-4">
+      {data.map((team) => (
+        <Link key={team.teamId} href={`team/${team.teamId}`}>
+          <div className="cursor-pointer rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200">
+            <h3 className="text-lg font-semibold text-gray-800">{team.name}</h3>
+            {team.description && (
+              <p className="mt-1 text-gray-500 text-sm">
+                {team.description.length > 100
+                  ? team.description.slice(0, 100) + "..."
+                  : team.description}
+              </p>
+            )}
+          </div>
+        </Link>
       ))}
-    </ul>
-  )
+    </div>
+  );
 }
 
 async function GetTeams() {
-  const prisma = new PrismaClient({})
-  const teams = await prisma.teams.findMany({where:{lookingForTeammates:true}})
+  const prisma = new PrismaClient();
+  const teams = await prisma.teams.findMany({
+    where: { lookingForTeammates: true },
+  });
   return teams;
 }
 
 export default function Home() {
   return (
-    <div className="w-[60%] mx-auto">
-      <div className="text-4xl pt-5">
-        Find a Team
-      </div>
+    <div className="min-h-screen bg-gray-50 py-10">
+      <div className="w-full max-w-3xl mx-auto">
+        <h1 className="text-4xl font-bold text-gray-900 mb-6 text-center">
+          Find a Team
+        </h1>
 
-      <div className="pl-10">
-        <div className="text-xl pt-10">
-          Browse groups searching for teammates:
-        </div>
+        <p className="text-lg text-gray-600 mb-8 text-center">
+          Browse groups searching for teammates and join a project!
+        </p>
 
-        <Suspense fallback={"Loading..."} >
+        <Suspense fallback={<p className="text-center text-gray-500">Loading teams...</p>}>
           <Teams />
         </Suspense>
-
       </div>
     </div>
   );
