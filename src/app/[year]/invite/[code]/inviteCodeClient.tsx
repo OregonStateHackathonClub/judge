@@ -33,7 +33,7 @@ export default function InvitePageClient({ code, year }: { code : string, year: 
             router.push("/log-in");
           }
 
-    }, [isPending, session, router]);
+    }, [isPending, session, router, code, year]);
 
     if (!session) {
         return <div>Loading...</div>;

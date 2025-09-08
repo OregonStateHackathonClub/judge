@@ -72,7 +72,7 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
     }
     fetchTeam()
     fetchInvite()
-  }, [teamId])
+  }, [teamId, form])
 
   const getLink = () => `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}/invite/${inviteCode}`
 
