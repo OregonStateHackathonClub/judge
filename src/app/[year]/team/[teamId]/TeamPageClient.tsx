@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
@@ -74,7 +74,13 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
     fetchInvite()
   }, [teamId, form])
 
-  const getLink = () => `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}/invite/${inviteCode}`
+  const getLink = useCallback(
+    () => 
+    (inviteCode == "") ? "Generating..." : `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}/invite/${inviteCode}`,
+    [year, inviteCode]
+  )
+
+  // const getLink = () => `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}/invite/${inviteCode}`
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(getLink())
@@ -158,6 +164,7 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
               <button
                 className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded"
                 onClick={async () => {
+                  setInviteCode("")
                   const success = await resetInviteCode(inviteCode); // make sure inviteCode is available
                   if (success) {
                     const fetchInvite = async () => {
