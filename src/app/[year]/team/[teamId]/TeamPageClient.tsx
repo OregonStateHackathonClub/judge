@@ -12,10 +12,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { getInviteCode, getTeamInfo, resetInviteCode, removeUserToTeams, updateTeam } from "@/app/actions"
+import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 const formSchema = z.object({
-  teamName: z.string().min(4),
-  lft: z.boolean().optional(),
+  name: z.string().min(4),
+  lookingForTeammates: z.boolean().optional(),
   contact: z.string().optional(),
   description: z.string().optional(),
 })
@@ -44,10 +46,11 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
   const [inviteCode, setInviteCode] = useState("")
   const [copied, setCopied] = useState(false)
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { teamName: "" },
+    defaultValues: { name: "" },
   })
 
   useEffect(() => {
@@ -60,10 +63,10 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
       }
       setTeam(updatedTeam)
       form.reset({
-        teamName: updatedTeam.name,
+        name: updatedTeam.name,
         contact: updatedTeam.contact ?? "",
         description: updatedTeam.description ?? "",
-        lft: updatedTeam.lookingForTeammates,
+        lookingForTeammates: updatedTeam.lookingForTeammates,
       })
     }
     const fetchInvite = async () => {
@@ -116,102 +119,128 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
       <div className="bg-white rounded-xl shadow-md p-6 flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">{team.name}</h1>
-          {team.lookingForTeammates && <span className="text-green-600 font-medium mt-1 inline-block">Looking for teammates ✔</span>}
+          {team.lookingForTeammates && (
+            <span className="text-green-600 font-medium mt-1 inline-block">
+              Looking for teammates ✔
+            </span>
+          )}
         </div>
         {isTeamMember && !editing && (
-          <Button variant="outline" className="rounded-xl" onClick={() => setEditing(true)}>Edit</Button>
+          <Button
+            variant="outline"
+            className="rounded-xl"
+            onClick={() => setEditing(true)}
+          >
+            Edit
+          </Button>
         )}
       </div>
-
-      {/* Team Description */}
-      {team.description && (
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-2">Description</h2>
-          <p className="text-gray-700">{team.description}</p>
-        </div>
+  
+      {/* --- View Mode --- */}
+      {!editing && (
+        <>
+          {/* Team Description */}
+          {team.description && (
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-semibold mb-2">Description</h2>
+              <p className="text-gray-700">{team.description}</p>
+            </div>
+          )}
+  
+          {/* Members */}
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-2">Members</h2>
+            <ul className="space-y-2">
+              {team.users.map((u: TeamUser) => (
+                <li key={u.judgeProfileId} className="flex items-center justify-between">
+                  <span>{u.judgeProfile?.user.name}</span>
+                  {isTeamMember && (
+                    <Image
+                      src="/trashcan-red.png"
+                      alt="Remove user"
+                      width={20}
+                      height={20}
+                      className="cursor-pointer"
+                      onClick={() => removeUser(u.judgeProfileId)}
+                    />
+                  )}
+                </li>
+              ))}
+            </ul>
+  
+            {/* Invite Link */}
+            {team.users.length < 4 && isTeamMember && (
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="mt-4 rounded-xl w-full">
+                    + Add Teammates
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 relative">
+                  <button
+                    className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded"
+                    onClick={async () => {
+                      if (inviteCode == "") return
+                      
+                      setInviteCode("")
+                      const success = await resetInviteCode(inviteCode)
+                      if (success) {
+                        const code = await getInviteCode(teamId)
+                        if (code) setInviteCode(code)
+                      } else {
+                        toast.error("Failed to remove invite.")
+                      }
+                    }}
+                  >
+                    <span className="text-2xl">&#10227;</span>
+                  </button>
+  
+                  <p className="text-sm mb-2">Send this invite link to friends:</p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={getLink()}
+                      readOnly
+                      className="flex-1 px-2 py-1 border rounded"
+                    />
+                    <Button size="sm" onClick={copyLink}>
+                      {copied ? "Copied!" : "Copy"}
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
+  
+          {/* Contact Info */}
+          {team.contact && (
+            <div className="bg-white rounded-xl shadow-md p-6">
+              <h2 className="text-xl font-semibold mb-2">Contact</h2>
+              <p>{team.contact}</p>
+            </div>
+          )}
+        </>
       )}
-
-      {/* Members */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-2">Members</h2>
-        <ul className="space-y-2">
-          {team.users.map((u: TeamUser) => (
-            <li key={u.judgeProfileId} className="flex items-center justify-between">
-              <span>{u.judgeProfile?.user.name}</span>
-              {isTeamMember && (
-                <Image
-                  src="/trashcan-red.png"
-                  alt="Remove user"
-                  width={20}
-                  height={20}
-                  className="cursor-pointer"
-                  onClick={() => removeUser(u.judgeProfileId)}
-                />
-              )}
-            </li>
-          ))}
-        </ul>
-
-        {/* Invite Link */}
-        {team.users.length < 4 && isTeamMember && (
-          <Popover open={open} onOpenChange={setOpen} >
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="mt-4 rounded-xl w-full">
-                + Add Teammates
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 relative">
-              <button
-                className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:bg-gray-200 rounded"
-                onClick={async () => {
-                  setInviteCode("")
-                  const success = await resetInviteCode(inviteCode); // make sure inviteCode is available
-                  if (success) {
-                    const fetchInvite = async () => {
-                      const code = await getInviteCode(teamId)
-                      if (code) setInviteCode(code)
-                    }
-                    fetchInvite();
-                  }
-                  else alert("Failed to remove invite.");
-                }}
-              >
-                <span className="text-2xl">&#10227;</span>
-              </button>
-          
-              <p className="text-sm mb-2">Send this invite link to friends:</p>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={getLink()}
-                  readOnly
-                  className="flex-1 px-2 py-1 border rounded"
-                />
-                <Button size="sm" onClick={copyLink}>
-                  {copied ? "Copied!" : "Copy"}
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
-      </div>
-
-      {/* Contact Info */}
-      {team.contact && (
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-2">Contact</h2>
-          <p>{team.contact}</p>
-        </div>
-      )}
-
-      {/* Edit Form */}
+  
+      {/* --- Edit Mode --- */}
       {editing && (
         <div className="bg-white rounded-xl shadow-md p-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form
+              onSubmit={form.handleSubmit(async (values) => {
+                setLoading(true)
+                try {
+                  await onSubmit(values)
+                } finally {
+                  setLoading(false)
+                }
+              })}
+              className="space-y-6"
+            >
+              {/* Name */}
               <FormField
                 control={form.control}
-                name="teamName"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Team Name</FormLabel>
@@ -222,9 +251,11 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
                   </FormItem>
                 )}
               />
+  
+              {/* Looking for teammates */}
               <FormField
                 control={form.control}
-                name="lft"
+                name="lookingForTeammates"
                 render={({ field }) => (
                   <FormItem className="flex items-center gap-2">
                     <Checkbox checked={field.value} onCheckedChange={field.onChange} />
@@ -232,6 +263,8 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
                   </FormItem>
                 )}
               />
+  
+              {/* Contact */}
               <FormField
                 control={form.control}
                 name="contact"
@@ -244,6 +277,8 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
                   </FormItem>
                 )}
               />
+  
+              {/* Description */}
               <FormField
                 control={form.control}
                 name="description"
@@ -256,9 +291,29 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
                   </FormItem>
                 )}
               />
+  
+              {/* Actions */}
               <div className="flex gap-4">
-                <Button type="submit" className="bg-green-500 hover:bg-green-600 rounded-xl">Update Team</Button>
-                <Button type="button" className="bg-gray-200 hover:bg-gray-300 rounded-xl" onClick={() => setEditing(false)}>Cancel</Button>
+                <Button
+                  type="submit"
+                  className="bg-green-500 hover:bg-green-600 rounded-xl"
+                  disabled={loading}
+                >
+                  <span className="inline-flex items-center justify-center min-w-[90px]">
+                    {loading ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      "Update Team"
+                    )}
+                  </span>
+                </Button>
+                <Button
+                  type="button"
+                  className="bg-gray-300 hover:bg-gray-300 rounded-xl"
+                  onClick={() => setEditing(false)}
+                >
+                  Cancel
+                </Button>
               </div>
             </form>
           </Form>
@@ -266,4 +321,4 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
       )}
     </div>
   )
-}
+}  

@@ -21,25 +21,28 @@ import { useForm } from "react-hook-form"
 
 import { createTeam } from "@/app/actions"
 import { useRouter } from "next/navigation"
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { authClient } from "@/lib/authClient"
 import { motion, AnimatePresence } from "framer-motion"
+import { Loader2 } from "lucide-react"
 
 const formSchema = z.object({
-  teamName: z.string().min(4, { message: "Team name must be at least 4 characters." }),
+  name: z.string().min(4, { message: "Team name must be at least 4 characters." }),
   lft: z.boolean().optional(),
   contact: z.string().optional(),
   description: z.string().optional(),
 })
 
 export default function Home({ params }: { params: Promise<{ year: string }> }) {
+  const [loading, setLoading] = useState(false)
+
   const hackathonId = React.use(params).year
   const router = useRouter()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      teamName: "",
+      name: "",
       lft: false,
     },
   })
@@ -58,7 +61,7 @@ export default function Home({ params }: { params: Promise<{ year: string }> }) 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     const teamData = {
-      name: values.teamName,
+      name: values.name,
       lookingForTeammates: values.lft,
       description: values.description,
       contact: values.contact,
@@ -83,11 +86,21 @@ export default function Home({ params }: { params: Promise<{ year: string }> }) 
         </p>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form
+            onSubmit={form.handleSubmit(async (values) => {
+              setLoading(true)
+              try {
+                await onSubmit(values)
+              } finally {
+                setLoading(false)
+              }
+            })}
+            className="space-y-8"
+          >
             {/* Team Name */}
             <FormField
               control={form.control}
-              name="teamName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Team Name</FormLabel>
@@ -148,7 +161,8 @@ export default function Home({ params }: { params: Promise<{ year: string }> }) 
                         <FormControl>
                           <Input
                             placeholder="Email: benny@beaverhacks.com"
-                            {...field} value={field.value || ""}
+                            {...field}
+                            value={field.value || ""}
                             className="rounded-xl"
                           />
                         </FormControl>
@@ -166,7 +180,8 @@ export default function Home({ params }: { params: Promise<{ year: string }> }) 
                         <FormControl>
                           <Textarea
                             placeholder="Prospective teammates should know..."
-                            {...field} value={field.value || ""}
+                            {...field}
+                            value={field.value || ""}
                             className="rounded-xl"
                           />
                         </FormControl>
@@ -177,14 +192,21 @@ export default function Home({ params }: { params: Promise<{ year: string }> }) 
               )}
             </AnimatePresence>
 
+            {/* Submit button */}
             <Button
               type="submit"
-              className="w-full rounded-xl bg-green-500 py-6 text-lg font-semibold text-white shadow-md hover:bg-green-600"
+              disabled={loading}
+              className="w-full rounded-xl bg-green-500 py-6 text-lg font-semibold text-white shadow-md hover:bg-green-600 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Create Team
+              {loading ? (
+                <Loader2 size={20} className="animate-spin mx-auto" />
+              ) : (
+                "Create Team"
+              )}
             </Button>
           </form>
         </Form>
+
       </div>
     </div>
   )
