@@ -10,42 +10,43 @@ import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 import { ProjectLinks } from "@/components/projectLinks";
 import { ImageCarousel } from "@/components/imageCarousel";
+import { Prisma } from "@prisma/client";
+import Image from "next/image";
 
-interface Track {
-  id: string;
-  name: string;
-}
-
-interface TrackLink {
-  trackId: string;
-  track: Track;
-}
-
-
-
-
-
-// This is an async Server Component (no "use client")
-export default async function ProjectPage(props: {
-  params: { year: string; id: string };
-}) {
-  const { params } = props;
-
-  const submission = await prisma.submissions.findUnique({
-    where: { id: params.id },
+// Define the reusable 'include' object for our query
+const submissionInclude = {
+  trackLinks: { include: { track: true } },
+  Team: {
     include: {
-      trackLinks: { include: { track: true } },
-      Team: {
+      users: {
         include: {
-          users: {
+          judgeProfile: {
             include: {
-              // user: true,
+              user: true,
             },
           },
         },
       },
     },
-  });
+  },
+};
+
+// Infer the TypeScript type directly from the include object
+type SubmissionWithDetails = Prisma.SubmissionsGetPayload<{
+  include: typeof submissionInclude;
+}>;
+
+// This is an async Server Component (no "use client")
+export default async function ProjectPage({
+  params,
+}: {
+  params: { year: string; id: string };
+}) {
+  const submission: SubmissionWithDetails | null =
+    await prisma.submissions.findUnique({
+      where: { id: params.id },
+      include: submissionInclude, // Use the constant for the query
+    });
 
   if (!submission) {
     return (
@@ -54,8 +55,6 @@ export default async function ProjectPage(props: {
       </div>
     );
   }
-
-  // const canViewScores = true; // Placeholder for auth logic
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200">
@@ -77,7 +76,7 @@ export default async function ProjectPage(props: {
             {submission.name}
           </h1>
           <div className="mt-3 flex flex-wrap gap-2">
-            {submission.trackLinks.map((link: TrackLink) => (
+            {submission.trackLinks.map((link) => (
               <Badge
                 key={link.trackId}
                 className="bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
@@ -131,7 +130,7 @@ export default async function ProjectPage(props: {
           </Card>
 
           <div className="grid gap-8 md:grid-cols-2">
-            {submission.Team?.[0]?.users?.length > 0 && (
+            {submission.Team?.[0]?.users && submission.Team[0].users.length > 0 && (
               <Card className="rounded-2xl border border-neutral-800 bg-neutral-900/60">
                 <CardHeader>
                   <CardTitle className="text-lg text-white">
@@ -140,24 +139,26 @@ export default async function ProjectPage(props: {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {submission.Team[0].users.map((member: TeamMember) => (
+                    {submission.Team[0].users.map((member) => (
                       <li
-                        key={member.userId}
+                        key={member.judgeProfileId}
                         className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
                       >
-                        {member.user?.image && (
-                          <img
-                            src={member.user.image}
-                            alt={member.user.name || "Team member"}
+                        {member.judgeProfile.user?.image && (
+                          <Image
+                            src={member.judgeProfile.user.image}
+                            alt={
+                              member.judgeProfile.user.name || "Team member"
+                            }
                             className="h-10 w-10 rounded-full object-cover"
                           />
                         )}
                         <div>
                           <p className="text-sm font-medium text-white">
-                            {member.user?.name || "Unknown"}
+                            {member.judgeProfile.user?.name || "Unknown"}
                           </p>
                           <p className="text-xs text-neutral-400">
-                            {member.user?.email}
+                            {member.judgeProfile.user?.email}
                           </p>
                         </div>
                       </li>

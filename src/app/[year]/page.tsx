@@ -48,7 +48,7 @@ export default async function Page({ params }: { params: { year: string } }) {
             Hackathon Not Found
           </h1>
           <p className="mt-3 text-base text-neutral-400">
-            Sorry, we couldn't find any hackathon data for the year{" "}
+            Sorry, we could not find any hackathon data for the year{" "}
             <strong>{yearParam}</strong>. It might not exist or may be
             archived.
           </p>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Filter } from "lucide-react";
 import SubmissionCard from "@/components/submissionCard";
+import Image from "next/image";
 
 // Define specific types for your data to replace 'any'
 interface Track {
@@ -140,7 +141,7 @@ export default function SubmissionsClient({
                         {src.endsWith(".png") ||
                         src.endsWith(".svg") ||
                         src.endsWith(".jpg") ? (
-                          <img
+                          <Image
                             src={src}
                             alt="Sponsor"
                             className="max-h-10 object-contain"

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import Image from "next/image";
 
 interface ImageCarouselProps {
   imageUrls: string[];
@@ -32,7 +33,7 @@ export function ImageCarousel({ imageUrls, altText }: ImageCarouselProps) {
       {/* Only display the current image */}
       {/* The `key={currentIndex}` here is important: it tells React to re-render the <img> tag
           when currentIndex changes, which then allows the CSS animation to trigger. */}
-      <img
+      <Image
         key={currentIndex}
         src={imageUrls[currentIndex]}
         alt={`${altText} ${currentIndex + 1}`}

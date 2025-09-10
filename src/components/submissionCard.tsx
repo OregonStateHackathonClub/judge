@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Tag } from "lucide-react";
 import { ProjectLinks } from "@/components/projectLinks";
+import Image from "next/image";
 
 // Define a type for the data this card needs
 type Submission = {
@@ -39,14 +40,15 @@ export default function SubmissionCard({
       onClick={onClick}
     >
       {/* Image Section */}
-      <div className="relative h-40 w-full flex-shrink-0 overflow-hidden rounded-t-2xl bg-neutral-900">
-        <img
+        <Image
           src={img}
           alt={`${submission.name} cover`}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+          fill
+          sizes="100vw"
+          priority={true}
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-      </div>
 
       {/* Content Section (Header) */}
       <CardHeader className="flex-grow px-4 py-3">
