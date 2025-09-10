@@ -1,25 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from "@/components/ui/card";
-import Link from "next/link";
+// import {
+//   Card,
+//   CardContent,
+//   CardHeader,
+//   CardTitle,
+//   CardDescription,
+//   CardFooter,
+// } from "@/components/ui/card";
+// import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Github,
-  Youtube,
+  // Github,
+  // Youtube,
   ChevronDown,
   Filter,
-  Star,
-  Tag,
+  // Star,
+  // Tag,
 } from "lucide-react";
-import { ProjectLinks } from "@/components/projectLinks";
+// import { ProjectLinks } from "@/components/projectLinks";
 import SubmissionCard from "@/components/submissionCard";
 
 
