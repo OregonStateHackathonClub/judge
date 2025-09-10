@@ -11,6 +11,20 @@ import { prisma } from "@/lib/prisma";
 import { ProjectLinks } from "@/components/projectLinks";
 import { ImageCarousel } from "@/components/imageCarousel";
 
+interface Track {
+  id: string;
+  name: string;
+}
+
+interface TrackLink {
+  trackId: string;
+  track: Track;
+}
+
+
+
+
+
 // This is an async Server Component (no "use client")
 export default async function ProjectPage(props: {
   params: { year: string; id: string };
@@ -41,7 +55,7 @@ export default async function ProjectPage(props: {
     );
   }
 
-  const canViewScores = true; // Placeholder for auth logic
+  // const canViewScores = true; // Placeholder for auth logic
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200">
@@ -63,7 +77,7 @@ export default async function ProjectPage(props: {
             {submission.name}
           </h1>
           <div className="mt-3 flex flex-wrap gap-2">
-            {submission.trackLinks.map((link: any) => (
+            {submission.trackLinks.map((link: TrackLink) => (
               <Badge
                 key={link.trackId}
                 className="bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
@@ -126,7 +140,7 @@ export default async function ProjectPage(props: {
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {submission.Team[0].users.map((member: any) => (
+                    {submission.Team[0].users.map((member: TeamMember) => (
                       <li
                         key={member.userId}
                         className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"

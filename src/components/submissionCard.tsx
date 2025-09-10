@@ -57,7 +57,7 @@ export default function SubmissionCard({
         {/* Track Badges */}
         {submission.trackLinks && submission.trackLinks.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {submission.trackLinks.map((link: any, index: number) => (
+            {submission.trackLinks.map((link: { track: { name: string } }, index: number) => (
               <span
                 key={index}
                 className="inline-flex items-center gap-1 rounded-full border border-neutral-800 bg-neutral-900 px-2 py-0.5 text-[10px] uppercase tracking-wide text-neutral-300"

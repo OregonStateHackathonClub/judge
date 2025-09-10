@@ -4,13 +4,15 @@ import Link from "next/link";
 import { SearchX, ArrowLeft } from "lucide-react";
 
 // Define a clear type for the component's props
-type PageProps = {
-  params: {
-    year: string;
-  };
-};
+// type PageProps = {
+//   params: {
+//     year: string;
+//   };
+// };
 
-export default async function Page({ params }: PageProps) {
+export default async function Page({ params }: { params: { year: string } }) {
+
+  const yearParam = params.year;
 
   // Artificially delay loading for 100 seconds (100000ms) to see the loading UI
   // await new Promise((resolve) => setTimeout(resolve, 100000));
@@ -47,7 +49,7 @@ export default async function Page({ params }: PageProps) {
           </h1>
           <p className="mt-3 text-base text-neutral-400">
             Sorry, we couldn't find any hackathon data for the year{" "}
-            <strong>{params.year}</strong>. It might not exist or may be
+            <strong>{yearParam}</strong>. It might not exist or may be
             archived.
           </p>
           <Link
@@ -67,7 +69,7 @@ export default async function Page({ params }: PageProps) {
     <SubmissionsClient
       hackathon={hackathon}
       tracks={hackathon.tracks}
-      year={params.year}
+      year={yearParam}
     />
   );
 }

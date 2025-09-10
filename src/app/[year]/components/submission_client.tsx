@@ -1,31 +1,37 @@
 "use client";
 
 import { useState, useEffect } from "react";
-// import {
-//   Card,
-//   CardContent,
-//   CardHeader,
-//   CardTitle,
-//   CardDescription,
-//   CardFooter,
-// } from "@/components/ui/card";
-// import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  // Github,
-  // Youtube,
-  ChevronDown,
-  Filter,
-  // Star,
-  // Tag,
-} from "lucide-react";
-// import { ProjectLinks } from "@/components/projectLinks";
+import { ChevronDown, Filter } from "lucide-react";
 import SubmissionCard from "@/components/submissionCard";
 
+// Define specific types for your data to replace 'any'
+interface Track {
+  id: string;
+  name: string;
+}
 
+interface Submission {
+  id: string;
+  name: string;
+  images?: string[];
+  miniDescription?: string;
+  githubURL?: string | null;
+  ytVideo?: string | null;
+  // FIX: Make sure the track object contains an 'id' for filtering
+  trackLinks?: { track: { id: string; name: string } }[];
+}
+
+interface Hackathon {
+  submissions: Submission[];
+  bannerImage?: string;
+  sponsorLogos?: string[];
+}
+
+// Use the new types in your component's props
 interface SubmissionsClientProps {
-  hackathon: any;
-  tracks: any[];
+  hackathon: Hackathon;
+  tracks: Track[];
   year: string;
 }
 
@@ -35,7 +41,7 @@ export default function SubmissionsClient({
   year,
 }: SubmissionsClientProps) {
   const [selectedTrack, setSelectedTrack] = useState("all");
-  const [filteredSubmissions, setFilteredSubmissions] = useState(
+  const [filteredSubmissions, setFilteredSubmissions] = useState<Submission[]>(
     hackathon.submissions
   );
   const router = useRouter();
@@ -44,9 +50,10 @@ export default function SubmissionsClient({
     if (selectedTrack === "all") {
       setFilteredSubmissions(hackathon.submissions);
     } else {
-      const filtered = hackathon.submissions.filter((submission: any) =>
+      const filtered = hackathon.submissions.filter((submission: Submission) =>
         submission.trackLinks?.some(
-          (link: any) => String(link.trackId) === String(selectedTrack)
+          // FIX: Compare the track's id to the selectedTrack value
+          (link) => String(link.track.id) === String(selectedTrack)
         )
       );
       setFilteredSubmissions(filtered);
@@ -61,10 +68,7 @@ export default function SubmissionsClient({
     router.push(`/${year}/projects/${submissionId}`);
   };
 
-  // Optional sponsors array support (string[] of image URLs or names).
-  const sponsorLogos: string[] =
-    (hackathon?.sponsorLogos as string[]) ||
-    []; // you can populate this later in your data layer
+  const sponsorLogos: string[] = hackathon?.sponsorLogos || [];
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200">
@@ -72,7 +76,6 @@ export default function SubmissionsClient({
       <div
         className="relative isolate overflow-hidden"
         style={{
-          // you can set hackathon.bannerImage later to customize per year
           backgroundImage: `linear-gradient(to bottom, rgba(10,10,10,.65), rgba(10,10,10,.95)), url(${
             hackathon?.bannerImage || "/hero-dark-texture.jpg"
           })`,
@@ -95,18 +98,12 @@ export default function SubmissionsClient({
 
             {/* Quick actions / filter */}
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              {/* New single container for the filter */}
               <div className="inline-flex items-center rounded-2xl border border-neutral-800 bg-neutral-900/70 text-sm text-neutral-300 transition-all focus-within:border-orange-500/70">
-                {/* Label Section */}
                 <div className="inline-flex items-center gap-2 px-4 py-2">
                   <Filter className="h-4 w-4" />
                   <span>Filter by track:</span>
                 </div>
-
-                {/* Vertical Separator */}
                 <div className="w-px self-stretch bg-neutral-800"></div>
-
-                {/* Dropdown Section */}
                 <div className="relative">
                   <select
                     className="appearance-none bg-transparent py-2 pl-4 pr-10 outline-none hover:cursor-pointer"
@@ -174,7 +171,7 @@ export default function SubmissionsClient({
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         {/* Submissions grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-          {filteredSubmissions.map((submission: any) => (
+          {filteredSubmissions.map((submission: Submission) => (
             <SubmissionCard
               key={submission.id}
               submission={submission}
