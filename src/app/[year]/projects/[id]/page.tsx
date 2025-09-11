@@ -37,11 +37,12 @@ type SubmissionWithDetails = Prisma.SubmissionsGetPayload<{
 }>;
 
 // This is an async Server Component (no "use client")
-export default async function ProjectPage({
-  params,
-}: {
-  params: { year: string; id: string };
-}) {
+export default async function ProjectPage(
+  props: {
+    params: Promise<{ year: string; id: string }>;
+  }
+) {
+  const params = await props.params;
   const submission: SubmissionWithDetails | null =
     await prisma.submissions.findUnique({
       where: { id: params.id },
@@ -150,6 +151,7 @@ export default async function ProjectPage({
                             alt={
                               member.judgeProfile.user.name || "Team member"
                             }
+                            fill
                             className="h-10 w-10 rounded-full object-cover"
                           />
                         )}

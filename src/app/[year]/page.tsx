@@ -10,7 +10,8 @@ import { SearchX, ArrowLeft } from "lucide-react";
 //   };
 // };
 
-export default async function Page({ params }: { params: { year: string } }) {
+export default async function Page(props: { params: Promise<{ year: string }> }) {
+  const params = await props.params;
 
   const yearParam = params.year;
 
