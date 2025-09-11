@@ -22,6 +22,11 @@ export default async function Page(props: { params: Promise<{ year: string }> })
     include: {
       tracks: true,
       submissions: {
+        where: {
+        status: {
+          not: "draft", // Only include submissions where status is NOT "DRAFT"
+        },
+      },
         include: {
           trackLinks: {
             include: {
