@@ -37,7 +37,8 @@ export function ImageCarousel({ imageUrls, altText }: ImageCarouselProps) {
         key={currentIndex}
         src={imageUrls[currentIndex]}
         alt={`${altText} ${currentIndex + 1}`}
-        fill
+        height={600}
+        width={1200}
         className="aspect-video w-full object-cover animate-fade-in" // Use a fade-in animation
       />
 
