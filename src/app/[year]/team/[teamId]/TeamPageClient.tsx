@@ -58,7 +58,7 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
       const updatedTeam = await getTeamInfo(teamId)
       if (!updatedTeam) {
         // Cope with your failures
-        console.error("Failed to find team")
+        toast.error("Failed to find team")
         return false
       }
       setTeam(updatedTeam)

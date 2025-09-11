@@ -25,6 +25,7 @@ import React, { useEffect, useState } from "react"
 import { authClient } from "@/lib/authClient"
 import { motion, AnimatePresence } from "framer-motion"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 const formSchema = z.object({
   name: z.string().min(4, { message: "Team name must be at least 4 characters." }),
@@ -70,7 +71,7 @@ export default function Home({ params }: { params: Promise<{ year: string }> }) 
     const teamId = await createTeam(teamData, true)
 
     if (!teamId) {
-      console.error("Failed to create team")
+      toast.error("Failed to create team")
       return false
     }
 

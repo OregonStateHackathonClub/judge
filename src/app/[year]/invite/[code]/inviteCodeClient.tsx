@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import { joinTeam } from "@/app/actions";
 import { authClient } from "@/lib/authClient";
 import { useRouter } from "next/navigation"
+import { toast } from "sonner";
 
 export default function InvitePageClient({ code, year }: { code : string, year: string }) {
 
@@ -19,7 +20,7 @@ export default function InvitePageClient({ code, year }: { code : string, year: 
         async function addToTeam() {
             const teamId = await joinTeam(code)
             if (!teamId) {
-                console.error("Could not join team")
+                toast.error("Could not join team")
                 setFailed(true)
                 return
             }

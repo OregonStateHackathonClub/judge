@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import InvitePageClient from "./inviteCodeClient";
 import { getTeamIdFromInvite } from "@/app/actions";
+import { toast } from "sonner";
 
 export default async function Page({ params }: { params: Promise<{ year: string; code: string }> }) {
   const prisma = new PrismaClient();
@@ -11,7 +12,7 @@ export default async function Page({ params }: { params: Promise<{ year: string;
 
   if (!teamId) {
     // Cope with your failures
-    console.error("Failed to get id from invite code")
+    toast.error("Failed to get id from invite code")
     return <div>Invite Failed</div>
   }
 
