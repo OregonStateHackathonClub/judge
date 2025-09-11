@@ -83,7 +83,6 @@ export async function createTeam(teamData: Prisma.TeamsCreateInput, addSelf : bo
         })
 
         if (existingTeam) {
-            console.log("User is already in team:", existingTeam.name)
             return false
         }
 
