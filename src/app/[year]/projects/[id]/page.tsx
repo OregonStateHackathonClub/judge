@@ -8,10 +8,12 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { ProjectLinks } from "@/components/projectLinks";
 import { ImageCarousel } from "@/components/imageCarousel";
-import { Prisma } from "@prisma/client";
 import Image from "next/image";
+// import { StaticImport } from "next/dist/shared/lib/get-img-props";
+// import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
 
 // Define the reusable 'include' object for our query
 const submissionInclude = {
@@ -77,7 +79,7 @@ export default async function ProjectPage(
             {submission.name}
           </h1>
           <div className="mt-3 flex flex-wrap gap-2">
-            {submission.trackLinks.map((link) => (
+            {submission.trackLinks.map((link: SubmissionWithDetails["trackLinks"][number]) => (
               <Badge
                 key={link.trackId}
                 className="bg-neutral-800 text-neutral-300 hover:bg-neutral-700"
@@ -140,21 +142,18 @@ export default async function ProjectPage(
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3">
-                    {submission.Team[0].users.map((member) => (
+                    {submission.Team[0].users.map((member, idx) => (
                       <li
-                        key={member.judgeProfileId}
+                        key={member.judgeProfileId ?? idx}
                         className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
                       >
-                        {member.judgeProfile.user?.image && (
-                          <Image
-                            src={member.judgeProfile.user.image}
-                            alt={
-                              member.judgeProfile.user.name || "Team member"
-                            }
-                            fill
-                            className="h-10 w-10 rounded-full object-cover"
-                          />
-                        )}
+                        <Image
+                          src={member.judgeProfile.user?.image ?? "/beaver.png"}
+                          alt={member.judgeProfile.user?.name || "Team member"}
+                          width={40}
+                          height={40}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
                         <div>
                           <p className="text-sm font-medium text-white">
                             {member.judgeProfile.user?.name || "Unknown"}
