@@ -29,17 +29,15 @@ export function ImageCarousel({ imageUrls, altText }: ImageCarouselProps) {
   }
 
   return (
-    <div className="relative h-full w-full">
-      {/* Only display the current image */}
-      {/* The `key={currentIndex}` here is important: it tells React to re-render the <img> tag
-          when currentIndex changes, which then allows the CSS animation to trigger. */}
+    <div className="relative w-full aspect-video">
       <Image
+        quality={100}
         key={currentIndex}
         src={imageUrls[currentIndex]}
         alt={`${altText} ${currentIndex + 1}`}
-        height={600}
-        width={1200}
-        className="aspect-video w-full object-cover animate-fade-in" // Use a fade-in animation
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        className="object-cover animate-fade-in"
       />
 
       {/* Navigation buttons */}
