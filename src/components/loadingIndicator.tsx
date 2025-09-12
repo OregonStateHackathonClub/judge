@@ -5,7 +5,7 @@ export default function LoadingIcon() {
   const mutedColor = "#3d3d3d"; // Corresponds to neutral-800
   
   // Color for the icon as it "fills up"
-  const fillColor = "#D25430";  // Burnt orange
+  const fillColor = "#D73F09";  // beaver orange
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">

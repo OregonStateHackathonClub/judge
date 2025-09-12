@@ -12,7 +12,7 @@ export function ProjectLinks({ githubURL, ytVideo }: ProjectLinksProps) {
   return (
     <div className="flex items-center gap-3">
       {githubURL && (
-        <Link
+        <a
           href={githubURL}
           target="_blank"
           rel="noopener noreferrer"
@@ -22,10 +22,10 @@ export function ProjectLinks({ githubURL, ytVideo }: ProjectLinksProps) {
         >
           <Github className="h-4 w-5 text-neutral-200 transition-colors duration-200 group-hover:text-blue-500" />
           GitHub
-        </Link>
+        </a>
       )}
       {ytVideo && (
-        <Link
+        <a
           href={ytVideo}
           target="_blank"
           rel="noopener noreferrer"
@@ -35,7 +35,7 @@ export function ProjectLinks({ githubURL, ytVideo }: ProjectLinksProps) {
         >
           <Youtube className="h-4 w-5 text-neutral-200 transition-colors duration-200 group-hover:text-red-600" />
           YouTube
-        </Link>
+        </a>
       )}
     </div>
   );

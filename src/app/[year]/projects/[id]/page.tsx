@@ -12,8 +12,6 @@ import { Prisma } from "@prisma/client";
 import { ProjectLinks } from "@/components/projectLinks";
 import { ImageCarousel } from "@/components/imageCarousel";
 import Image from "next/image";
-// import { StaticImport } from "next/dist/shared/lib/get-img-props";
-// import { Key, ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
 
 // Define the reusable 'include' object for our query
 const submissionInclude = {
