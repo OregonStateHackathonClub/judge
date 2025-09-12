@@ -1,7 +1,9 @@
+"use client";
 import z from "zod";
 import { formSchema } from "../schema";
 import { UseFormReturn } from "react-hook-form";
 import { JSX, useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import StepOne from "./formStep1";
 import StepTwo from "./formStep2";
 import StepThree from "./formStep3";
@@ -20,6 +22,7 @@ export function MultiStepViewer({
   submissionId,
   setSubmissionId
 }: { form: FormType, submissionId: string | null, setSubmissionId: (id: string) => void }) {
+  const router = useRouter();
   const stepFormElements: {
     [key: number]: JSX.Element;
   } = {
@@ -198,6 +201,7 @@ export function MultiStepViewer({
                 })
                 if (result.data?.success) {
                   alert("Project submitted successfully.")
+                  router.push("/")
                 } else {
                   const errorMessage = result.serverError || JSON.stringify(result.validationErrors) || result.data?.error || "An unknown error occurred.";
                   console.error("Submission failed:", errorMessage);

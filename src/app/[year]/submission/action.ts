@@ -60,7 +60,7 @@ export async function sendData(data: {
                 comments: "",
                 rubric: {},
                 score: 0,
-                hackathonId: "234"
+                hackathonId: "2026"
             },
         })
         console.log("Created submission", submission)
