@@ -1,6 +1,5 @@
 "use client"; // This is a Client Component
 
-import Link from "next/link";
 import { Github, Youtube } from "lucide-react";
 
 type ProjectLinksProps = {

@@ -1,11 +1,6 @@
 import React from 'react';
 
 export default function LoadingIcon() {
-  // Color for the icon when it's "empty" or the background
-  const mutedColor = "#3d3d3d"; // Corresponds to neutral-800
-  
-  // Color for the icon as it "fills up"
-  const fillColor = "#D73F09";  // beaver orange
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">
@@ -37,7 +32,8 @@ export default function LoadingIcon() {
 
         {/* --- Background Code Brackets (muted stroke) --- */}
         <g
-          stroke={mutedColor}
+          stroke={"currentColor"}
+          className='text-neutral-800'
           strokeWidth="12"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -53,7 +49,8 @@ export default function LoadingIcon() {
         {/* This group is masked by the clipPath, revealing the colored stroke inside */}
         <g
           clipPath="url(#fillClip)"
-          stroke={fillColor}
+          stroke={"currentColor"}
+          className='text-osu-orange'
           strokeWidth="12"
           strokeLinecap="round"
           strokeLinejoin="round"
