@@ -97,31 +97,7 @@ export default function SubmissionsClient({
               builds.
             </p>
 
-            {/* Quick actions / filter */}
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-              <div className="inline-flex items-center rounded-2xl border border-neutral-800 bg-neutral-900/70 text-sm text-neutral-300 transition-all focus-within:border-orange-500/70">
-                <div className="inline-flex items-center gap-2 px-4 py-2">
-                  <Filter className="h-4 w-4" />
-                  <span>Filter by track:</span>
-                </div>
-                <div className="w-px self-stretch bg-neutral-800"></div>
-                <div className="relative">
-                  <select
-                    className="appearance-none bg-transparent py-2 pl-4 pr-10 outline-none hover:cursor-pointer"
-                    value={selectedTrack}
-                    onChange={handleTrackChange}
-                  >
-                    <option value="all">All Tracks</option>
-                    {tracks.map((track) => (
-                      <option key={track.id} value={track.id}>
-                        {track.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-                </div>
-              </div>
-            </div>
+            
           </div>
 
           {/* Sponsors (per year) */}
@@ -165,6 +141,31 @@ export default function SubmissionsClient({
               </div>
             </div>
           </div>
+          {/* Quick actions / filter */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <div className="inline-flex items-center rounded-2xl border border-neutral-800 bg-neutral-900/70 text-sm text-neutral-300 transition-all focus-within:border-orange-500/70">
+                <div className="inline-flex items-center gap-2 px-4 py-2">
+                  <Filter className="h-4 w-4" />
+                  <span>Filter by track:</span>
+                </div>
+                <div className="w-px self-stretch bg-neutral-800"></div>
+                <div className="relative">
+                  <select
+                    className="appearance-none bg-transparent py-2 pl-4 pr-10 outline-none hover:cursor-pointer"
+                    value={selectedTrack}
+                    onChange={handleTrackChange}
+                  >
+                    <option value="all">All Tracks</option>
+                    {tracks.map((track) => (
+                      <option key={track.id} value={track.id}>
+                        {track.name}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                </div>
+              </div>
+            </div>
         </div>
       </div>
 
