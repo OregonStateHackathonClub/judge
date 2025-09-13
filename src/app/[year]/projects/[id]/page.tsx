@@ -146,7 +146,7 @@ export default async function ProjectPage(
                         className="flex items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
                       >
                         <Image
-                          src={member.judgeProfile.user?.image ?? "/beaver.png"}
+                          src={member.judgeProfile.user?.image || "/beaver.png"}
                           alt={member.judgeProfile.user?.name || "Team member"}
                           width={40}
                           height={40}
