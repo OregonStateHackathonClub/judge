@@ -7,7 +7,7 @@ import SubmissionCard from "@/components/submissionCard";
 import Image from "next/image";
 import Link from "next/link";
 
-// Define specific types for your data to replace 'any'
+// Define specific types for your data
 interface Track {
   id: string;
   name: string;
@@ -29,19 +29,19 @@ interface Hackathon {
   sponsorLogos?: string[];
 }
 
-// Use the new types in your component's props
+// Update the props interface to accept the user's team ID
 interface SubmissionsClientProps {
   hackathon: Hackathon;
   tracks: Track[];
   year: string;
-  userHasTeam?: boolean;
+  userTeamId?: string | null;
 }
 
 export default function SubmissionsClient({
   hackathon,
   tracks,
   year,
-  userHasTeam = false,
+  userTeamId = null, // Accept the team ID prop
 }: SubmissionsClientProps) {
   const [selectedTrack, setSelectedTrack] = useState("all");
   const [filteredSubmissions, setFilteredSubmissions] = useState<Submission[]>(
@@ -173,9 +173,9 @@ export default function SubmissionsClient({
           </div>
 
           {/* Conditional Team Buttons */}
-          {userHasTeam ? (
+          {userTeamId ? (
             <Link
-              href={`/${year}/team`}
+              href={`/${year}/team/${userTeamId}`}
               className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500"
             >
               Go to Your Team

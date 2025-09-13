@@ -2,23 +2,39 @@ import { prisma } from "@/lib/prisma";
 import SubmissionsClient from "./components/submission_client";
 import Link from "next/link";
 import { SearchX, ArrowLeft } from "lucide-react";
-
-// Define a clear type for the component's props
-// type PageProps = {
-//   params: {
-//     year: string;
-//   };
-// };
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 export default async function Page(props: { params: Promise<{ year: string }> }) {
   const params = await props.params;
-
   const yearParam = params.year;
 
-  // Artificially delay loading for 100 seconds (100000ms) to see the loading UI
-  // await new Promise((resolve) => setTimeout(resolve, 100000));
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  let userTeamId: string | null = null;
+   if (session?.user) {
+    const teamMembership = await prisma.teams.findFirst({
+      where: {
+        hackathonId: yearParam,
+        users: {
+          some: {
+            judgeProfileId: session.user.id,
+          },
+        },
+      },
+      select: {
+        teamId: true,
+      },
+    });
+    if (teamMembership) {
+      userTeamId = teamMembership.teamId;
+    }
+  }
+
   const hackathon = await prisma.hackathons.findFirst({
-    where: { id: params.year },
+    where: { id: yearParam },
     include: {
       tracks: true,
       submissions: {
@@ -76,6 +92,7 @@ export default async function Page(props: { params: Promise<{ year: string }> })
       hackathon={hackathon}
       tracks={hackathon.tracks}
       year={yearParam}
+      userTeamId={userTeamId}
     />
   );
 }
