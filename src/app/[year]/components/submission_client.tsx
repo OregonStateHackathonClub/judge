@@ -29,19 +29,25 @@ interface Hackathon {
   sponsorLogos?: string[];
 }
 
-// Update the props interface to accept the user's team ID
 interface SubmissionsClientProps {
   hackathon: Hackathon;
   tracks: Track[];
   year: string;
   userTeamId?: string | null;
 }
+const sponsors = [
+  { href: "https://acm.oregonstate.edu/", src: "https://beaverhacks.org/images/acmlogo.svg", alt: "ACM OSU" },
+  { href: "https://www.osuappdev.club/", src: "https://beaverhacks.org/_next/image?url=%2Fimages%2Fappdev.png&w=256&q=75", alt: "App Development Club" },
+  { href: "https://gdgc-osu.com/", src: "https://beaverhacks.org/_next/image?url=%2Fimages%2Fgdgc.png&w=256&q=75", alt: "Google Developer Group on Campus" },
+  { href: "https://org.osu.edu/womenincyber/", src: "https://beaverhacks.org/_next/image?url=%2Fimages%2Fwicys.png&w=256&q=75", alt: "Women in Cybersecurity" },
+];
+
 
 export default function SubmissionsClient({
   hackathon,
   tracks,
   year,
-  userTeamId = null, // Accept the team ID prop
+  userTeamId = null,
 }: SubmissionsClientProps) {
   const [selectedTrack, setSelectedTrack] = useState("all");
   const [filteredSubmissions, setFilteredSubmissions] = useState<Submission[]>(
@@ -70,8 +76,6 @@ export default function SubmissionsClient({
     router.push(`/${year}/projects/${submissionId}`);
   };
 
-  const sponsorLogos: string[] = hackathon?.sponsorLogos || [];
-
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200">
       {/* ====== HERO / TITLE BANNER ====== */}
@@ -85,7 +89,7 @@ export default function SubmissionsClient({
           backgroundPosition: "center",
         }}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-12 sm:pb-8">
           <div className="flex flex-col items-center text-center gap-4">
             <span className="inline-flex items-center rounded-full border border-neutral-800 bg-neutral-900/60 px-3 py-1 text-s tracking-wide text-neutral-300">
               Oregon State University
@@ -106,39 +110,25 @@ export default function SubmissionsClient({
                 <p className="mb-4 text-center text-s tracking-wide text-neutral-400">
                   Sponsors
                 </p>
-                {sponsorLogos.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6 items-center justify-center">
-                    {sponsorLogos.map((src, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center justify-center opacity-80 hover:opacity-100 transition"
-                      >
-                        {src.endsWith(".png") ||
-                        src.endsWith(".svg") ||
-                        src.endsWith(".jpg") ? (
-                          <Image
-                            src={src}
-                            alt="Sponsor"
-                            width={120}
-                            height={40}
-                            className="object-contain"
-                          />
-                        ) : (
-                          <span className="text-sm text-neutral-300">
-                            {src}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-center text-xs text-neutral-500">
-                    Add sponsor logos later by populating{" "}
-                    <code className="rounded bg-neutral-800 px-1 py-0.5">
-                      logos from database
-                    </code>
-                  </p>
-                )}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 items-center justify-center">
+                  {sponsors.map((sponsor) => (
+                    <a
+                      key={sponsor.alt}
+                      href={sponsor.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center opacity-80 hover:opacity-100 hover:scale-102 transition"
+                    >
+                      <Image
+                        src={sponsor.src}
+                        alt={sponsor.alt}
+                        width={100}
+                        height={40}
+                        className="object-contain"
+                      />
+                    </a>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
