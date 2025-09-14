@@ -190,11 +190,12 @@ export default function SubmissionsClient({
 
         {/* Submissions grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-          {filteredSubmissions.map((submission: Submission) => (
+          {filteredSubmissions.map((submission: Submission, index: number) => (
             <SubmissionCard
               key={submission.id}
               submission={submission}
               onClick={() => handleProjectClick(submission.id)}
+              index={index}
             />
           ))}
         </div>

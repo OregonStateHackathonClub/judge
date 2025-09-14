@@ -26,11 +26,13 @@ type Submission = {
 interface SubmissionCardProps {
   submission: Submission;
   onClick: () => void;
+  index: number;
 }
 
 export default function SubmissionCard({
   submission,
   onClick,
+  index,
 }: SubmissionCardProps) {
   const img = submission.images?.[0] || "/beaver.png";
 
@@ -69,7 +71,7 @@ export default function SubmissionCard({
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover transition duration-500 group-hover:scale-[1.03]"
-          priority={true}
+          priority={index < 7}
         />
       </div>
 
