@@ -58,9 +58,9 @@ export default function StepTwo({ form }: { form: FormType}) {
     const [ showPreview, setShowPreview ] = useState(false)
     const description = form.watch("mainDescription")
     return (
-        <div>
+    <div className="text-zinc-800 dark:text-zinc-100">
             {" "}
-            <h1 className="text-3xl font-bold">Main Description</h1>
+            <h1 className="text-3xl font-bold text-zinc-800 dark:text-zinc-100">Main Description</h1>
             <div className="py-3 w-full">
                 <Separator />
             </div>
@@ -86,7 +86,7 @@ export default function StepTwo({ form }: { form: FormType}) {
                 )}
             />
             ) : (
-                <div className="markdown-preview border-2 m-1 p-2 rounded">
+                <div className="markdown-preview border-2 m-1 p-2 rounded bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 prose prose-sm dark:prose-invert max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{description}</ReactMarkdown>
                 </div>
             )}

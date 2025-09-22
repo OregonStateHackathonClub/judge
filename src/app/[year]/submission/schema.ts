@@ -10,6 +10,7 @@ export interface ActionResponse < T = z.infer<typeof formSchema> > {
 }
 export const formSchema = z.object({
   submissionId: z.string().optional().nullable(),
+  teamId: z.string().optional().nullable(),
   name: z.string().min(1).max(50,{
     message: "Title should be between 3 and 50 characters"
   }).or(z.literal("")),

@@ -13,6 +13,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { serverAction } from "../server-action";
 import StepFour from "./formStep4";
 import { useMultiStepForm } from "./useForm";
+import { toast } from 'sonner'
 
 type FormValues = z.infer<typeof formSchema>
 type FormType = UseFormReturn<FormValues>
@@ -22,6 +23,7 @@ export function MultiStepViewer({
   submissionId,
   setSubmissionId
 }: { form: FormType, submissionId: string | null, setSubmissionId: (id: string) => void }) {
+  
   const router = useRouter();
   const stepFormElements: {
     [key: number]: JSX.Element;
@@ -82,7 +84,7 @@ export function MultiStepViewer({
         } else {
           const errorMessage = result.serverError || JSON.stringify(result.validationErrors) || result.data?.error || "An unknown error occurred.";
           console.error("Submission failed:", errorMessage);
-          alert(`There was an error saving your progress: ${errorMessage}`);
+          toast(`There was an error saving your progress: ${errorMessage}`);
         }
       }
     }, delay);
@@ -140,7 +142,7 @@ export function MultiStepViewer({
                   // Handle server, validation, or custom errors from the action
                   const errorMessage = result.serverError || JSON.stringify(result.validationErrors) || result.data?.error || "An unknown error occurred.";
                   console.error("Submission failed:", errorMessage);
-                  alert(`There was an error saving your progress: ${errorMessage}`);
+                  toast(`There was an error saving your progress: ${errorMessage}`);
                 }
               }
               // If not valid, errors will show automatically via <FormMessage />
@@ -175,7 +177,7 @@ export function MultiStepViewer({
                   // Handle server, validation, or custom errors from the action
                   const errorMessage = result.serverError || JSON.stringify(result.validationErrors) || result.data?.error || "An unknown error occurred.";
                   console.error("Submission failed:", errorMessage);
-                  alert(`There was an error saving your progress: ${errorMessage}`);
+                  toast(`There was an error saving your progress: ${errorMessage}`);
                 }
               }
               // If not valid, errors will show automatically via <FormMessage />
@@ -200,12 +202,12 @@ export function MultiStepViewer({
                   status: "submitted",
                 })
                 if (result.data?.success) {
-                  alert("Project submitted successfully.")
+                  toast("Project submitted successfully.")
                   router.push("/")
                 } else {
                   const errorMessage = result.serverError || JSON.stringify(result.validationErrors) || result.data?.error || "An unknown error occurred.";
                   console.error("Submission failed:", errorMessage);
-                  alert(`There was an error submitting your project: ${errorMessage}`);
+                  toast(`There was an error submitting your project: ${errorMessage}`);
                 }
               }
             }}

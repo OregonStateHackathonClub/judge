@@ -34,7 +34,7 @@ export default function StepOne({ form }: { form: FormType}) {
           name="name"
           render={({ field }) => (
             <FormItem className="w-full">
-              <FormLabel>Title*</FormLabel>
+  <FormLabel>Title*</FormLabel>
               <FormControl>
                 <Input
                   placeholder="Enter your project's title"
@@ -44,6 +44,7 @@ export default function StepOne({ form }: { form: FormType}) {
                     const val = e.target.value;
                     field.onChange(val);
                   }}
+                  
                 />
               </FormControl>
               <FormMessage />
@@ -56,7 +57,7 @@ export default function StepOne({ form }: { form: FormType}) {
           name="description"
           render={({ field }) => (
             <FormItem className="w-full">
-              <FormLabel>Description*</FormLabel>
+  <FormLabel>Description*</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Enter a short description"
@@ -65,6 +66,7 @@ export default function StepOne({ form }: { form: FormType}) {
                     const val = e.target.value;
                     field.onChange(val);
                   }}
+                  
                 />
               </FormControl>
               <FormMessage />
@@ -77,7 +79,7 @@ export default function StepOne({ form }: { form: FormType}) {
             name="photos"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Upload Image or PDF</FormLabel>
+  <FormLabel>Upload Image</FormLabel>
                 <FormControl>
                   {}
                   <div>
@@ -126,7 +128,7 @@ export default function StepOne({ form }: { form: FormType}) {
                       }}
                     />
                     {error && (
-                      <p className="mt-2 text-sm text-red-600">{error}</p>
+          <p className="mt-2 text-sm text-red-600">{error}</p>
                     )}
                     {field.value && !error && (
                       <div className="mt-3 flex items-center gap-3">
@@ -170,7 +172,7 @@ export default function StepOne({ form }: { form: FormType}) {
                         >
                           Remove
                         </Button>
-                        {isUploading && <span className="text-xs text-zinc-500">Working…</span>}
+                        {isUploading && <span className="text-xs text-zinc-400">Working…</span>}
                       </div>
                     )}
                   </div>
@@ -182,7 +184,7 @@ export default function StepOne({ form }: { form: FormType}) {
 
           
         </div>
-        <Separator className="mt-10" />
+  <Separator className="mt-10" />
       </div>
     )
 }

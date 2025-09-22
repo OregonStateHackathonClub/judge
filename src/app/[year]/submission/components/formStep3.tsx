@@ -9,8 +9,8 @@ type FormType = UseFormReturn<z.infer<typeof formSchema>>
 
 export default function StepThree({ form }: { form: FormType}) {
     return (
-        <div>
-        <h1 className="text-3xl font-bold">Project Info</h1>
+    <div className="text-zinc-800 dark:text-zinc-100">
+    <h1 className="text-3xl font-bold text-zinc-800 dark:text-zinc-100">Project Info</h1>
         <div className="py-3 w-full">
             <Separator />
         </div>

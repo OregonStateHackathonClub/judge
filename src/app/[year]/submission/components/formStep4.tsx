@@ -6,9 +6,9 @@ type FormType = UseFormReturn<z.infer<typeof formSchema>>
 
 export default function StepFour({ form }: { form: FormType}) {
     return (
-        <div>
-        <h1 className="text-3xl font-bold">Project Review</h1>
-        <p className="text-base">
+    <div className="text-zinc-800 dark:text-zinc-100">
+    <h1 className="text-3xl font-bold text-zinc-800 dark:text-zinc-100">Project Review</h1>
+    <p className="text-base text-zinc-700 dark:text-zinc-300">
             Please review the information below to ensure everything is correct:
         </p>
         <div className="mt-4 space-y-2">

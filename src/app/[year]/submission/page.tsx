@@ -3,7 +3,8 @@ import * as z from "zod";
 import { formSchema } from "./schema";
 import { serverAction } from "./server-action";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { useAction } from "next-safe-action/hooks";
 import {
@@ -16,21 +17,61 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { MultiStepViewer } from "./components/multiStepViewer";
+import { toast } from 'sonner'
 
 export default function DraftForm() {
   const [submissionId, setSubmissionId] = useState<string | null>(null)
+  const searchParams = useSearchParams();
+  const teamIdFromQuery = searchParams.get("teamId");
+  const editId = searchParams.get("edit");
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
     defaultValues: {
+      teamId: teamIdFromQuery || undefined,
       name: "",
       description: "",
       mainDescription: "",
       github: "",
       youtube: "",
       photos: "",
+  status: "draft"
     },
   });
+
+  // If navigating into edit mode with existing team linkage present later
+  useEffect(() => {
+    if (teamIdFromQuery && !form.getValues("teamId")) {
+      form.setValue("teamId", teamIdFromQuery);
+    }
+  }, [teamIdFromQuery, form]);
+
+  // Prefill when editing existing submission
+  useEffect(() => {
+    const doFetch = async () => {
+      if (!editId) return;
+      try {
+        const res = await fetch(`/api/submission/${editId}`);
+        if (!res.ok) return;
+        const { submission } = await res.json();
+        form.reset({
+          submissionId: submission.id,
+          teamId: form.getValues("teamId"),
+          name: submission.name || "",
+          description: submission.miniDescription || "",
+          mainDescription: submission.bio || "",
+          github: submission.githubURL || "",
+          youtube: submission.ytVideo || "",
+          photos: submission.images?.[0] || "",
+          status: submission.status || "draft"
+        });
+        setSubmissionId(submission.id);
+      } catch (e) {
+        console.error("Prefill failed", e);
+      }
+    };
+    doFetch();
+  }, [editId, form]);
 
   const doSthAction = useAction(serverAction, {
     onSuccess: (result) => {
@@ -43,7 +84,7 @@ export default function DraftForm() {
     },
     onError: (error) => {
       // TODO: show error message
-      alert("Error updating database: " + JSON.stringify(error))
+      toast("Error updating database: " + JSON.stringify(error))
     },
   });
 
@@ -67,12 +108,12 @@ export default function DraftForm() {
         </form>
       </Form>
       <div className="min-w-76">
-        <Card className="flex flex-col justify-between transition-shadow overflow-hidden shadow-lg sticky top-4">
-          <div className="relative w-full aspect-[4/3] overflow-hidden border-b">
+        <Card className="flex flex-col justify-between transition-shadow overflow-hidden shadow-lg sticky top-4 !pt-0">
+          <div className="relative w-full aspect-[4/3] overflow-hidden border-b h-56">
             <img
               src={form.watch("photos") || "/beaver.png"}
               alt={`${form.watch("name")} image`}
-              className="absolute inset-0 m-auto max-h-full max-w-full object-contain"
+              className="object-cover"
             />
           </div>
           <CardHeader className="w-full h-full">

@@ -14,11 +14,12 @@ export const serverAction = actionClient.inputSchema(formSchema).action(async ({
       githubLink: parsedInput.github || "",
       youtubeLink: parsedInput.youtube || "",
       uploadPhotos: parsedInput.photos || "",
-      status: parsedInput.status || "draft"
+  status: parsedInput.status || "draft",
+  teamId: parsedInput.teamId || null
     }
     const result = parsedInput.submissionId
-      ? await updateData(parsedInput.submissionId, mapData)
-      : await sendData(mapData);
+  ? await updateData(parsedInput.submissionId, mapData)
+  : await sendData(mapData);
 
     if (!result.success) {
       return { success: false, error: result.error };

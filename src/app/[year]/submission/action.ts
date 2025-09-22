@@ -3,6 +3,7 @@
 import { prisma } from "./prisma"
 import { randomUUID } from "crypto"
 
+
 export async function updateData(
     submissionId: string,
     data: {
@@ -13,6 +14,7 @@ export async function updateData(
     youtubeLink: string
     uploadPhotos: string;
     status: string;
+    teamId?: string | null;
 }) {
     try {
         const updateSubmission = await prisma.submissions.update({
@@ -27,6 +29,13 @@ export async function updateData(
                 status: data.status
             } 
         })
+        // Optionally ensure team is linked if provided and not already pointing
+        if (data.teamId) {
+            await prisma.teams.updateMany({
+                where: { teamId: data.teamId, submissionId: null },
+                data: { submissionId }
+            });
+        }
         return { success: true, submission: updateSubmission}
     } catch (error) {
         console.error("Update error", error)
@@ -43,7 +52,8 @@ export async function sendData(data: {
     githubLink: string;
     youtubeLink: string
     uploadPhotos: string;
-    status: string
+    status: string;
+    teamId?: string | null;
 }) {    
     // Read JSON data from the submission form
     try {
@@ -64,6 +74,12 @@ export async function sendData(data: {
             },
         })
         console.log("Created submission", submission)
+        if (data.teamId) {
+            await prisma.teams.update({
+                where: { teamId: data.teamId },
+                data: { submissionId: submission.id }
+            });
+        }
         // Return if the submission is successful
         return { success: true, submission}
     } catch (error) {

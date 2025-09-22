@@ -34,6 +34,7 @@ interface SubmissionsClientProps {
   tracks: Track[];
   year: string;
   userTeamId?: string | null;
+  teamSubmission?: { id: string; status: string } | null;
 }
 const sponsors = [
   { href: "https://acm.oregonstate.edu/", src: "https://beaverhacks.org/images/acmlogo.svg", alt: "ACM OSU" },
@@ -48,12 +49,12 @@ export default function SubmissionsClient({
   tracks,
   year,
   userTeamId = null,
+  teamSubmission = null,
 }: SubmissionsClientProps) {
   const [selectedTrack, setSelectedTrack] = useState("all");
   const [filteredSubmissions, setFilteredSubmissions] = useState<Submission[]>(
     hackathon.submissions
   );
-  const router = useRouter();
 
   useEffect(() => {
     if (selectedTrack === "all") {
@@ -70,10 +71,6 @@ export default function SubmissionsClient({
 
   const handleTrackChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTrack(e.target.value);
-  };
-
-  const handleProjectClick = (submissionId: string) => {
-    router.push(`/${year}/projects/${submissionId}`);
   };
 
   return (
@@ -164,12 +161,30 @@ export default function SubmissionsClient({
 
           {/* Conditional Team Buttons */}
           {userTeamId ? (
-            <Link
-              href={`/${year}/team/${userTeamId}`}
-              className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500"
-            >
-              Go to Your Team
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={`/${year}/team/${userTeamId}`}
+                className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500"
+              >
+                Go to Your Team
+              </Link>
+              {!teamSubmission && (
+                <Link
+                  href={`/${year}/submission?teamId=${userTeamId}`}
+                  className="rounded-xl border border-orange-500/40 bg-neutral-900/60 px-4 py-2 text-sm font-semibold text-orange-300 transition hover:border-orange-400 hover:text-white"
+                >
+                  Create Submission
+                </Link>
+              )}
+              {teamSubmission && (
+                <Link
+                  href={teamSubmission.status === 'submitted' ? `/${year}/projects/${teamSubmission.id}` : `/${year}/submission?edit=${teamSubmission.id}`}
+                  className="rounded-xl border border-blue-500/40 bg-neutral-900/60 px-4 py-2 text-sm font-semibold text-blue-300 transition hover:border-blue-400 hover:text-white"
+                >
+                  {teamSubmission.status === 'submitted' ? 'View Submission' : 'Edit Draft'}
+                </Link>
+              )}
+            </div>
           ) : (
             <>
               <Link
@@ -191,12 +206,14 @@ export default function SubmissionsClient({
         {/* Submissions grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           {filteredSubmissions.map((submission: Submission, index: number) => (
-            <SubmissionCard
-              key={submission.id}
-              submission={submission}
-              onClick={() => handleProjectClick(submission.id)}
-              index={index}
-            />
+            <Link href={`/${year}/projects/${submission.id}`}
+                key={submission.id}
+            >
+              <SubmissionCard
+                submission={submission}
+                index={index}
+              />
+            </Link>
           ))}
         </div>
 

@@ -25,13 +25,11 @@ type Submission = {
 
 interface SubmissionCardProps {
   submission: Submission;
-  onClick: () => void;
   index: number;
 }
 
 export default function SubmissionCard({
   submission,
-  onClick,
   index,
 }: SubmissionCardProps) {
   const img = submission.images?.[0] || "/beaver.png";
@@ -39,7 +37,6 @@ export default function SubmissionCard({
   return (
     <Card
       className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border-2 border-neutral-800 bg-neutral-900/60 backdrop-blur transition hover:border-orange-500/50 hover:bg-neutral-900 hover:shadow-lg hover:shadow-orange-500/10 supports-[backdrop-filter]:bg-neutral-900/50"
-      onClick={onClick}
     >
       {/* Top Section: Title and Badges */}
       <CardHeader className="p-1">
