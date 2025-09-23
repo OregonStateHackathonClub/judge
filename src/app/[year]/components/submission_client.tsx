@@ -176,12 +176,22 @@ export default function SubmissionsClient({
                 </Link>
               )}
               {teamSubmission && (
-                <Link
-                  href={teamSubmission.status === 'submitted' ? `/${year}/projects/${teamSubmission.id}` : `/${year}/submission?edit=${teamSubmission.id}`}
-                  className="rounded-xl border border-blue-500/40 bg-neutral-900/60 px-4 py-2 text-sm font-semibold text-blue-300 transition hover:border-blue-400 hover:text-white"
-                >
-                  {teamSubmission.status === 'submitted' ? 'View Submission' : 'Edit Draft'}
-                </Link>
+                <>
+                  {teamSubmission.status === "submitted" && (
+                    <Link
+                      href={`/${year}/projects/${teamSubmission.id}`}
+                      className="rounded-xl border border-green-500/40 bg-neutral-900/60 px-4 py-2 text-sm font-semibold text-green-300 transition hover:border-green-400 hover:text-white"
+                    >
+                      View Submission
+                    </Link>
+                  )}
+                  <Link
+                    href={`/${year}/submission?edit=${teamSubmission.id}`}
+                    className="rounded-xl border border-blue-500/40 bg-neutral-900/60 px-4 py-2 text-sm font-semibold text-blue-300 transition hover:border-blue-400 hover:text-white"
+                  >
+                    Edit
+                  </Link>
+                </>
               )}
             </div>
           ) : (

@@ -57,6 +57,7 @@ export default function DraftForm() {
         const res = await fetch(`/api/submission/${editId}`);
         if (!res.ok) return;
         const { submission } = await res.json();
+
         form.reset({
           submissionId: submission.id,
           teamId: form.getValues("teamId"),
@@ -65,8 +66,8 @@ export default function DraftForm() {
           mainDescription: submission.bio || "",
           github: submission.githubURL || "",
           youtube: submission.ytVideo || "",
-          photos: submission.images || [],
-          status: submission.status || "draft"
+          photos: submission.images?.[0] || "",
+          status: "draft"
         });
         setSubmissionId(submission.id);
       } catch (e) {
