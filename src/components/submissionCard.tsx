@@ -90,7 +90,6 @@ export default function SubmissionCard({
             className="ml-auto inline-flex items-center rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition hover:border-orange-500/50 hover:bg-neutral-800 hover:cursor-pointer"
             onClick={(e) => {
               e.stopPropagation();
-              onClick();
             }}
           >
             Open →

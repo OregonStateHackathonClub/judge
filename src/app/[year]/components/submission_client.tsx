@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronDown, Filter } from "lucide-react";
 import SubmissionCard from "@/components/submissionCard";
 import Image from "next/image";
