@@ -16,9 +16,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import Image from "next/image";
 import { MultiStepViewer } from "./components/multiStepViewer";
 import { toast } from 'sonner'
+import Image from "next/image"
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -66,7 +66,7 @@ export default function DraftForm() {
           mainDescription: submission.bio || "",
           github: submission.githubURL || "",
           youtube: submission.ytVideo || "",
-          photos: submission.images?.[0] || "",
+          photos: submission.images || [],
           status: "draft"
         });
         setSubmissionId(submission.id);
