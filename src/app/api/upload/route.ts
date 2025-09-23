@@ -42,46 +42,56 @@ export async function POST(req: Request) {
 	lastRequestByIp.set(ip, now);
 
 	if (!process.env.BLOB_READ_WRITE_TOKEN) {
-		return NextResponse.json({ error: "Server not configured for Blob uploads." }, { status: 500 });
+			return NextResponse.json({ error: "Server not configured for Blob uploads." }, { status: 500 });
 	}
 
 	const form = await req.formData();
-	const file = form.get("file");
-	if (!(file instanceof File)) {
-		return NextResponse.json({ error: "Missing file" }, { status: 400 });
-	}
+		const entries = form.getAll("file");
+		const files: File[] = entries.filter((f): f is File => f instanceof File);
+		if (files.length === 0) {
+			return NextResponse.json({ error: "Missing file" }, { status: 400 });
+		}
 
-	// Validate size and type
-	if (file.size > MAX_BYTES) {
-		return NextResponse.json({ error: `File too large. Max ${Math.floor(MAX_BYTES / (1024 * 1024))}MB` }, { status: 413 });
-	}
-	if (!ALLOWED_MIME.has(file.type)) {
-		return NextResponse.json({ error: "Unsupported file type" }, { status: 415 });
-	}
+		for (const file of files) {
+			if (file.size > MAX_BYTES) {
+				return NextResponse.json({ error: `File too large. Max ${Math.floor(MAX_BYTES / (1024 * 1024))}MB` }, { status: 413 });
+			}
+			if (!ALLOWED_MIME.has(file.type)) {
+				return NextResponse.json({ error: "Unsupported file type" }, { status: 415 });
+			}
+		}
 
-	const ext = (() => {
-		const fromName = file.name?.split(".").pop()?.toLowerCase();
-		if (fromName) return fromName;
-		if (file.type === "image/png") return "png";
-		if (file.type === "image/jpeg") return "jpg";
-		if (file.type === "image/webp") return "webp";
-		if (file.type === "application/pdf") return "pdf";
-		return "bin";
-	})();
+		function guessExt(file: File) {
+			const fromName = file.name?.split(".").pop()?.toLowerCase();
+			if (fromName) return fromName;
+			if (file.type === "image/png") return "png";
+			if (file.type === "image/jpeg") return "jpg";
+			if (file.type === "image/webp") return "webp";
+			if (file.type === "application/pdf") return "pdf";
+			return "bin";
+		}
 
-	const filename = `uploads/${crypto.randomUUID()}.${ext}`;
-
-	try {
-		const blob = await put(filename, file, {
-			access: "public",
-			contentType: file.type,
-			token: process.env.BLOB_READ_WRITE_TOKEN,
-			addRandomSuffix: false,
-		});
-		return NextResponse.json({ url: blob.url }, { status: 201 });
+		try {
+			const uploads = await Promise.all(
+				files.map(async (file) => {
+					const ext = guessExt(file);
+					const filename = `uploads/${crypto.randomUUID()}.${ext}`;
+					const blob = await put(filename, file, {
+						access: "public",
+						contentType: file.type,
+						token: process.env.BLOB_READ_WRITE_TOKEN,
+						addRandomSuffix: false,
+					});
+					return blob.url;
+				})
+			);
+			if (uploads.length === 1) {
+				return NextResponse.json({ url: uploads[0] }, { status: 201 });
+			}
+			return NextResponse.json({ urls: uploads }, { status: 201 });
 		} catch {
-		return NextResponse.json({ error: "Upload failed" }, { status: 500 });
-	}
+			return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+		}
 }
 
 export async function DELETE(req: Request) {

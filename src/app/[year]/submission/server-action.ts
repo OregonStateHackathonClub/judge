@@ -7,13 +7,22 @@ export const serverAction = actionClient.inputSchema(formSchema).action(async ({
   parsedInput
 }) => {
   try {
-    const mapData = {
+    const mapData: {
+      projectTitle: string;
+      miniDescription: string;
+      projectDescription: string;
+      githubLink: string;
+      youtubeLink: string;
+      uploadPhotos: string[];
+      status: string;
+      teamId: string | null;
+    } = {
       projectTitle: parsedInput.name,
       miniDescription: parsedInput.description,
       projectDescription: parsedInput.mainDescription || "",
       githubLink: parsedInput.github || "",
       youtubeLink: parsedInput.youtube || "",
-      uploadPhotos: parsedInput.photos || "",
+      uploadPhotos: parsedInput.photos || [],
   status: parsedInput.status || "draft",
   teamId: parsedInput.teamId || null
     }

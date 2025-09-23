@@ -5,7 +5,7 @@ import { serverAction } from "./server-action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { useAction } from "next-safe-action/hooks";
 import {
   Form,
@@ -16,16 +16,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import Image from "next/image";
 import { MultiStepViewer } from "./components/multiStepViewer";
 import { toast } from 'sonner'
+
+type FormValues = z.infer<typeof formSchema>;
 
 export default function DraftForm() {
   const [submissionId, setSubmissionId] = useState<string | null>(null)
   const searchParams = useSearchParams();
   const teamIdFromQuery = searchParams.get("teamId");
   const editId = searchParams.get("edit");
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema) as Resolver<FormValues>,
     mode: "onBlur",
     defaultValues: {
       teamId: teamIdFromQuery || undefined,
@@ -34,7 +37,7 @@ export default function DraftForm() {
       mainDescription: "",
       github: "",
       youtube: "",
-      photos: "",
+      photos: [],
   status: "draft"
     },
   });
@@ -62,7 +65,7 @@ export default function DraftForm() {
           mainDescription: submission.bio || "",
           github: submission.githubURL || "",
           youtube: submission.ytVideo || "",
-          photos: submission.images?.[0] || "",
+          photos: submission.images || [],
           status: submission.status || "draft"
         });
         setSubmissionId(submission.id);
@@ -110,9 +113,10 @@ export default function DraftForm() {
       <div className="min-w-76">
         <Card className="flex flex-col justify-between transition-shadow overflow-hidden shadow-lg sticky top-4 !pt-0">
           <div className="relative w-full aspect-[4/3] overflow-hidden border-b h-56">
-            <img
-              src={form.watch("photos") || "/beaver.png"}
+            <Image
+              src={(form.watch("photos")?.[0]) || "/beaver.png"}
               alt={`${form.watch("name")} image`}
+              fill
               className="object-cover"
             />
           </div>

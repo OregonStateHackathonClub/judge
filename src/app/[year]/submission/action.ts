@@ -12,7 +12,7 @@ export async function updateData(
     projectDescription: string;
     githubLink: string;
     youtubeLink: string
-    uploadPhotos: string;
+    uploadPhotos: string[];
     status: string;
     teamId?: string | null;
 }) {
@@ -25,7 +25,7 @@ export async function updateData(
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
                 ytVideo: data.youtubeLink,
-                images: data.uploadPhotos ? [data.uploadPhotos] : [],
+                images: Array.isArray(data.uploadPhotos) ? data.uploadPhotos : [],
                 status: data.status
             } 
         })
@@ -51,7 +51,7 @@ export async function sendData(data: {
     projectDescription: string;
     githubLink: string;
     youtubeLink: string
-    uploadPhotos: string;
+    uploadPhotos: string[];
     status: string;
     teamId?: string | null;
 }) {    
@@ -66,7 +66,7 @@ export async function sendData(data: {
                 bio: data.projectDescription,
                 githubURL: data.githubLink,
                 ytVideo: data.youtubeLink,
-                images: data.uploadPhotos ? [data.uploadPhotos] : [],
+                images: Array.isArray(data.uploadPhotos) ? data.uploadPhotos : [],
                 comments: "",
                 rubric: {},
                 score: 0,

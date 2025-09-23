@@ -92,7 +92,7 @@ export default function StepOne({ form }: { form: FormType}) {
                       onChange={async (e) => {
                         setError("")
                         const file = e.target.files?.[0] || null
-                        if (!file) { field.onChange(""); return }
+                        if (!file) { return }
 
                         // Client-side guards
                         if (!ALLOWED.includes(file.type as AllowedMime)) {
@@ -116,11 +116,12 @@ export default function StepOne({ form }: { form: FormType}) {
                             throw new Error(data?.error || "Upload failed")
                           }
                           const data = (await res.json()) as { url: string }
-                          field.onChange(data.url)
+                          // Replace any existing photos with the single selected one
+                          field.onChange([data.url])
                         } catch (err) {
                           const msg = err instanceof Error ? err.message : "Upload failed"
                           setError(msg)
-                          field.onChange("")
+                          // do not clear existing images on error
                         } finally {
                           setIsUploading(false)
                           if (inputRef.current) inputRef.current.value = ""
@@ -130,26 +131,29 @@ export default function StepOne({ form }: { form: FormType}) {
                     {error && (
           <p className="mt-2 text-sm text-red-600">{error}</p>
                     )}
-                    {field.value && !error && (
+                    {Array.isArray(field.value) && field.value.length > 0 && !error && (
                       <div className="mt-3 flex items-center gap-3">
-                        {isImage(field.value) ? (
-                          <Image
-                            src={field.value}
-                            alt="Selected upload preview"
-                            width={64}
-                            height={64}
-                            className="h-16 w-16 rounded object-cover"
-                          />
-                        ) : (
-                          <a
-                            href={field.value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-indigo-600 underline"
-                          >
-                            View file
-                          </a>
-                        )}
+                        {(() => {
+                          const url = (field.value as string[])[0]
+                          return isImage(url) ? (
+                            <Image
+                              src={url}
+                              alt="Selected upload preview"
+                              width={64}
+                              height={64}
+                              className="h-16 w-16 rounded object-cover"
+                            />
+                          ) : (
+                            <a
+                              href={url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-indigo-600 underline"
+                            >
+                              View file
+                            </a>
+                          )
+                        })()}
                         <Button
                           type="button"
                           variant="destructive"
@@ -157,17 +161,14 @@ export default function StepOne({ form }: { form: FormType}) {
                           disabled={isUploading}
                           onClick={async () => {
                             setError("")
-                            const url = field.value as string
+                            const url = (field.value as string[])[0]
                             try {
-                              // attempt server delete if this is a vercel blob URL
                               const isBlob = /vercel-storage\.com\//.test(url)
                               if (isBlob) {
                                 await fetch(`/api/upload?url=${encodeURIComponent(url)}`, { method: "DELETE" })
-                                // ignore non-200s to avoid UX friction
                               }
                             } catch {}
-                            field.onChange("")
-                            if (inputRef.current) inputRef.current.value = ""
+                            field.onChange([])
                           }}
                         >
                           Remove
