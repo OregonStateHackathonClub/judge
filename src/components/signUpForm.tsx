@@ -15,6 +15,7 @@ import { Loader2 } from "lucide-react";
 import { signUp } from "@/lib/authClient";
 import { useRouter } from "next/navigation";
 import { createJudgeProfile } from "@/app/actions";
+import { toast } from 'sonner'
 
 export function SignUpForm() {
 	const [firstName, setFirstName] = useState("");
@@ -115,7 +116,7 @@ export function SignUpForm() {
 										setLoading(true);
 									},
 									onError: (ctx) => {
-                                        console.log(ctx.error.message);
+                                        toast(ctx.error.message);
 									},
 									onSuccess: async () => {
 										const res = await createJudgeProfile();
