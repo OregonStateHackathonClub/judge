@@ -172,7 +172,7 @@ model Invites {
   teamId String
   code   String @id @default(cuid())
 
-  teams Teams? @relation(fields: [teamId], references: [teamId])
+  teams Teams? @relation(fields: [teamId], references: [teamId], onDelete: Cascade)
 
   @@index([teamId])
 }

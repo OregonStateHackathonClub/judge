@@ -236,7 +236,36 @@ export async function removeUserToTeams(judgeProfileId: string, teamId: string) 
                 teamId
             }
             },
+            select: {
+                team: {
+                    select: {
+                        users: true,
+                    },
+                },
+            },
         });
+
+        let newTeam = await prisma.teams.findUnique({
+            where: {
+                teamId: teamId
+            },
+            select: {
+                users: true,
+            }
+        })
+
+        if (newTeam == null) {
+            // Cry like a baby
+            return false;
+        }
+
+        if (newTeam.users.length === 0) {
+            await prisma.teams.delete({
+                where: {
+                    teamId: teamId
+                },
+            })
+        }
 
         return true
     } catch (error) {
