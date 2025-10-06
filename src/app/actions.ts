@@ -260,6 +260,14 @@ export async function removeUserToTeams(judgeProfileId: string, teamId: string) 
         }
 
         if (newTeam.users.length === 0) {
+
+            await prisma.invites.deleteMany({
+                where: {
+                    teamId: teamId
+                },
+            })
+
+
             await prisma.teams.delete({
                 where: {
                     teamId: teamId
