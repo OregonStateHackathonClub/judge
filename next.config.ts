@@ -18,6 +18,9 @@ const nextConfig: NextConfig = {
       // You can add other trusted domains here
     ],
   },
+  experimental: {
+    useCache: true,
+  },
 };
 
 export default nextConfig;

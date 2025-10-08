@@ -1,23 +1,14 @@
-// src/app/page.tsx
-
-import { prisma } from "@/lib/prisma";
+import { getCurrentHackathonId } from "@/lib/queries";
 import { redirect } from "next/navigation";
 
 export default async function RootPage() {
   // Find the most recent hackathon by ordering by ID in descending order
   // and taking the first one. This ensures you always get the latest.
-  const currentHackathon = await prisma.hackathons.findFirst({
-    orderBy: {
-      id: "desc",
-    },
-    select: {
-      id: true, // We only need the ID for the redirect
-    },
-  });
+  const currentHackathonId = await getCurrentHackathonId()
 
   // If a hackathon is found in the database, redirect to its page.
-  if (currentHackathon) {
-    redirect(`/${currentHackathon.id}`);
+  if (currentHackathonId) {
+    redirect(`/${currentHackathonId}`);
   }
 
   // This content is shown ONLY if no hackathons are found in the database.
