@@ -7,6 +7,8 @@ import { Prisma } from "@prisma/client";
 import { ProjectLinks } from "@/components/projectLinks";
 import { ImageCarousel } from "@/components/imageCarousel";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown"
+import remarkGfm from 'remark-gfm'
 
 // Define the reusable 'include' object for our query
 const submissionInclude = {
@@ -93,10 +95,9 @@ export default async function ProjectPage(props: {
                       About This Project
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm leading-relaxed text-neutral-300">
-                      {submission.bio || "No description provided."}
-                    </p>
+                  <CardContent className="markdown-preview text-sm leading-relaxed text-neutral-300">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{submission.bio}</ReactMarkdown>
+                    {/* {submission.bio || "No description provided."} */}
                   </CardContent>
                 </Card>
             </div>
