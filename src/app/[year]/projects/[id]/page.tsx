@@ -95,7 +95,7 @@ export default async function ProjectPage(props: {
                       About This Project
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="markdown-preview text-sm leading-relaxed text-neutral-300">
+                  <CardContent className="prose-lg text-sm leading-relaxed text-neutral-300">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{submission.bio}</ReactMarkdown>
                     {/* {submission.bio || "No description provided."} */}
                   </CardContent>

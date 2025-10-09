@@ -8,51 +8,9 @@ import { formSchema } from "../schema";
 import ReactMarkdown from "react-markdown"
 import remarkGfm from 'remark-gfm'
 import { Button } from "@/components/ui/button";
-//import Link from "next/link";
+
 
 type FormType = UseFormReturn<z.infer<typeof formSchema>>
-
-// const components: Components = {
-//     a: (props) => {
-//         const href = props.href;
-//         const allowedURLS = ["localhost:3000", "OUR URL (vercel should autofill into some env var)"];
-//         if (!href) return;
-//         if (href.startsWith("#")) {
-//             return <a {...props} />;
-//         }
-//         const u = URL.parse(href);
-
-//         if (
-//             u &&
-//             allowedURLS.includes(u.host) &&
-//             ["http:", "https:"].includes(u.protocol)
-//         ) {
-         
-
-//             return <Link href={u.pathname} {...props} />;
-//         }
-
-//         return <a target="_blank" {...props} />;
-//     },
-//     img: (props) => {
-//         const src = props.src;
-//         if (!src) return;
-//         const u = URL.parse(src);
-//         const allowedURLS = ["localhost:3000", "OUR URL (vercel should autofill into some env var)", "i.imgur.com"];
-
-//         if (
-//             u &&
-//             allowedURLS.includes(u.host) &&
-//             ["http:", "https:"].includes(u.protocol)
-//         ) {
-//             return (
-//                 <a href={src} target="_blank">
-//                     <img {...props} className="rounded-xl !my-2" />
-//                 </a>
-//             );
-//         }
-//     },
-// };
 
 export default function StepTwo({ form }: { form: FormType}) {
     const [ showPreview, setShowPreview ] = useState(false)
@@ -86,12 +44,12 @@ export default function StepTwo({ form }: { form: FormType}) {
                 )}
             />
             ) : (
-                <div className="markdown-preview border-2 m-1 p-2 rounded bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 prose prose-sm dark:prose-invert max-w-none">
+                <div className="border-2 m-1 p-2 rounded bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 prose prose-sm max-w-none">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{description}</ReactMarkdown>
                 </div>
             )}
             
-            <div className="py-3 w-full">
+            <div className="py-3 w-full">   
                 <Separator />
             </div>
         </div>

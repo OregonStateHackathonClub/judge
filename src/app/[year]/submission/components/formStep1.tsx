@@ -9,6 +9,7 @@ import Image from "next/image";
 import * as z from "zod";
 import { formSchema } from "../schema";
 import { toast } from "sonner";
+import { totalImages } from "../schema";
 
 type FormType = UseFormReturn<z.infer<typeof formSchema>>
 
@@ -119,10 +120,10 @@ export default function StepOne({ form }: { form: FormType}) {
                         : field.value
                         ? [field.value]
                         : [];
-                      const remaining = 5 - current.length;
+                      const remaining = totalImages - current.length;
                       if (remaining <= 0) {
                         toast(
-                          "You already have 5 photos. Remove one to add more."
+                          "You already have ${totalImages} photos. Remove one to add more."
                         );
                         if (inputRef.current) inputRef.current.value = "";
                         return;

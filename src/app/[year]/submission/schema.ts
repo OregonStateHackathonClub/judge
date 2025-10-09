@@ -1,5 +1,7 @@
 import * as z from "zod"
 
+export const totalImages = 20
+
 export interface ActionResponse < T = z.infer<typeof formSchema> > {
   success: boolean
   message: string
@@ -28,6 +30,6 @@ export const formSchema = z.object({
     val => val === '' || /^https?:\/\/(www\.)?youtube\.com/.test(val), {
     message: 'Must be a YouTube link',
   }).optional(),
-  photos: z.array(z.string()).max(5, { message: "You can upload up to 5 photos" }).default([]),
+  photos: z.array(z.string()).max(totalImages, { message: "You can upload up to 5 photos" }).default([]),
   status: z.string().optional()
 }); 

@@ -1,5 +1,7 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @import "tw-animate-css";
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -116,42 +118,37 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.prose {
+    /* Properly style inline codeblocks */
+    :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *)):not(
+            pre > code
+        ) {
+        &::before,
+        &::after {
+            content: "" !important;
+        }
+
+        @apply rounded-full bg-zinc-900/40 px-1.5 py-1 font-normal text-zinc-100 ring ring-white/10 backdrop-blur-sm;
+    }
+
+  blockquote {
+    @apply bg-osu-orange/10 border-l-4 border-osu-orange;
+  }
+
+  blockquote p {
+    @apply text-black;
+  }
+
+  blockquote a {
+    @apply text-osu-orange;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer components {
-  .markdown-preview h1 {
-    @apply text-3xl font-bold mt-6 mb-4;
-  }
-  .markdown-preview h2 {
-    @apply text-2xl font-semibold mt-5 mb-3;
-  }
-  .markdown-preview p {
-    @apply mb-4 leading-relaxed;
-  }
-  .markdown-preview ul {
-    @apply list-disc pl-6 mb-4;
-  }
-  .markdown-preview ol {
-    @apply list-decimal pl-6 mb-4;
-  }
-  .markdown-preview table {
-    @apply w-full border-collapse my-4;
-  }
-  .markdown-preview th,
-  .markdown-preview td {
-    @apply border border-gray-300 px-3 py-2 text-left;
-  }
-  .markdown-preview blockquote {
-    @apply border-l-4 border-gray-300 pl-4 text-gray-600 italic my-4;
-  }
-  .markdown-preview code {
-    @apply bg-gray-100 px-1 py-0.5 rounded font-mono;
   }
 }
