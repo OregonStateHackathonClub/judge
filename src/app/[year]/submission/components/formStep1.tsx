@@ -9,6 +9,7 @@ import Image from "next/image";
 import * as z from "zod";
 import { formSchema } from "../schema";
 import { toast } from "sonner";
+import { totalImages } from "../schema";
 
 type FormType = UseFormReturn<z.infer<typeof formSchema>>
 
