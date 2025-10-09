@@ -17,7 +17,7 @@ export default function StepOne({ form }: { form: FormType}) {
     const [isUploading, setIsUploading] = useState(false)
     const [error, setError] = useState<string>("")
 
-  const ALLOWED = [
+    const ALLOWED = [
       "image/png",
       "image/jpeg",
       "image/webp",
@@ -26,6 +26,104 @@ export default function StepOne({ form }: { form: FormType}) {
   type AllowedMime = typeof ALLOWED[number]
     const MAX_BYTES = 5 * 1024 * 1024 // 5MB
     const isImage = (url: string) => /\.(png|jpg|jpeg|webp)$/i.test(url)
+
+  const handleUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    currentValue: string | string[],
+    onFieldChange: (val: string[]) => void) => {
+
+    setError("");
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) {
+      return;
+    }
+
+    // Client-side guards
+    for (const file of files) {
+      if (!ALLOWED.includes(file.type as AllowedMime)) {
+        setError(
+          "Unsupported file type. Use PNG, JPG, WEBP, or PDF."
+        );
+        if (inputRef.current) inputRef.current.value = "";
+        return;
+      }
+      if (file.size > MAX_BYTES) {
+        setError("File too large. Max 5MB.");
+        if (inputRef.current) inputRef.current.value = "";
+        return;
+      }
+    }
+
+    const current = Array.isArray(currentValue)
+      ? currentValue
+      : currentValue
+      ? [currentValue]
+      : [];
+    const remaining = 5 - current.length;
+    if (remaining <= 0) {
+      toast(
+        "You already have 5 photos. Remove one to add more."
+      );
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    let toUpload = files;
+    if (files.length > remaining) {
+      toUpload = files.slice(0, remaining);
+    }
+
+    setIsUploading(true);
+    try {
+      const fd = new FormData();
+      for (const file of toUpload) {
+        fd.append("file", file);
+      }
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd,
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || "Upload failed");
+      }
+      const data = (await res.json()) as {
+        url?: string;
+        urls?: string[];
+      };
+      const uploaded: string[] =
+        data.urls ?? (data.url ? [data.url] : []);
+      onFieldChange([...current, ...uploaded]);
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Upload failed";
+      setError(msg);
+      // keep existing images on error
+    } finally {
+      setIsUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }}
+
+  const handleBlob = async (url: string, currentValue: string[], onFieldChange: (val: string[]) => void, setError: (msg: string) => void) => {
+    setError("");
+    try {
+      const isBlob = /vercel-storage\.com\//.test(
+        url
+      );
+      if (isBlob) {
+        await fetch(
+          `/api/upload?url=${encodeURIComponent(
+            url
+          )}`,
+          { method: "DELETE" }
+        );
+      }
+    } catch {}
+    const next = currentValue.filter(
+      (u) => u !== url
+    );
+    onFieldChange(next);
+  }
+
   return (
       <div>
         <h1 className="text-xl font-bold text-zinc-800">Project Title & Mini-Description</h1>
@@ -91,78 +189,7 @@ export default function StepOne({ form }: { form: FormType}) {
                     accept="image/png,image/jpeg,image/webp,application/pdf"
                     className="block w-full text-sm text-zinc-700 file:mr-3 file:rounded-md file:border-0 file:bg-indigo-600 file:px-3 file:py-2 file:text-white hover:file:bg-indigo-700"
                     disabled={isUploading}
-                    onChange={async (e) => {
-                      setError("");
-                      const files = Array.from(e.target.files || []);
-                      if (files.length === 0) {
-                        return;
-                      }
-
-                      // Client-side guards
-                      for (const file of files) {
-                        if (!ALLOWED.includes(file.type as AllowedMime)) {
-                          setError(
-                            "Unsupported file type. Use PNG, JPG, WEBP, or PDF."
-                          );
-                          if (inputRef.current) inputRef.current.value = "";
-                          return;
-                        }
-                        if (file.size > MAX_BYTES) {
-                          setError("File too large. Max 5MB.");
-                          if (inputRef.current) inputRef.current.value = "";
-                          return;
-                        }
-                      }
-
-                      const current = Array.isArray(field.value)
-                        ? field.value
-                        : field.value
-                        ? [field.value]
-                        : [];
-                      const remaining = 5 - current.length;
-                      if (remaining <= 0) {
-                        toast(
-                          "You already have 5 photos. Remove one to add more."
-                        );
-                        if (inputRef.current) inputRef.current.value = "";
-                        return;
-                      }
-                      let toUpload = files;
-                      if (files.length > remaining) {
-                        toUpload = files.slice(0, remaining);
-                      }
-
-                      setIsUploading(true);
-                      try {
-                        const fd = new FormData();
-                        for (const file of toUpload) {
-                          fd.append("file", file);
-                        }
-                        const res = await fetch("/api/upload", {
-                          method: "POST",
-                          body: fd,
-                        });
-                        if (!res.ok) {
-                          const data = await res.json().catch(() => ({}));
-                          throw new Error(data?.error || "Upload failed");
-                        }
-                        const data = (await res.json()) as {
-                          url?: string;
-                          urls?: string[];
-                        };
-                        const uploaded: string[] =
-                          data.urls ?? (data.url ? [data.url] : []);
-                        field.onChange([...current, ...uploaded]);
-                      } catch (err) {
-                        const msg =
-                          err instanceof Error ? err.message : "Upload failed";
-                        setError(msg);
-                        // keep existing images on error
-                      } finally {
-                        setIsUploading(false);
-                        if (inputRef.current) inputRef.current.value = "";
-                      }
-                    }}
+                    onChange={(e) => handleUpload(e, field.value, field.onChange)}
                   />
                   {error && (
                     <p className="mt-2 text-sm text-red-600">{error}</p>
@@ -196,26 +223,12 @@ export default function StepOne({ form }: { form: FormType}) {
                               variant="destructive"
                               size="sm"
                               disabled={isUploading}
-                              onClick={async () => {
-                                setError("");
-                                try {
-                                  const isBlob = /vercel-storage\.com\//.test(
-                                    url
-                                  );
-                                  if (isBlob) {
-                                    await fetch(
-                                      `/api/upload?url=${encodeURIComponent(
-                                        url
-                                      )}`,
-                                      { method: "DELETE" }
-                                    );
-                                  }
-                                } catch {}
-                                const next = (field.value as string[]).filter(
-                                  (u) => u !== url
-                                );
-                                field.onChange(next);
-                              }}
+                              onClick={() => handleBlob(
+                                url,
+                                Array.isArray(field.value) ? field.value : [],
+                                field.onChange,
+                                setError
+                              )}
                             >
                               Remove
                             </Button>
