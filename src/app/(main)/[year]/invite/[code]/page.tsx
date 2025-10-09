@@ -1,11 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import InvitePageClient from "./inviteCodeClient";
 import { getTeamIdFromInvite } from "@/app/actions";
 import { toast } from "sonner";
+import { prisma } from "@/lib/prisma";
 
 export default async function Page({ params }: { params: Promise<{ year: string; code: string }> }) {
-  const prisma = new PrismaClient();
-
   const {year, code} = await params
 
   const teamId = await getTeamIdFromInvite(code)
