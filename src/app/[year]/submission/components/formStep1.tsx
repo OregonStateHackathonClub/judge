@@ -60,7 +60,7 @@ export default function StepOne({ form }: { form: FormType}) {
       : currentValue
       ? [currentValue]
       : [];
-    const remaining = 5 - current.length;
+    const remaining = totalImages - current.length;
     if (remaining <= 0) {
       toast(
         "You already have 5 photos. Remove one to add more."
