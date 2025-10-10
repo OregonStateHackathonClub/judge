@@ -118,9 +118,9 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
       if (!await getTeamInfo(teamId)) {
         router.push("/")
       }
-  
+
       if (!await isTeamMember(teamId)) {
-        router.refresh()
+        window.location.reload()
       }
     }
   }
@@ -170,7 +170,7 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
                   <span className="flex gap-2">
                     {u.judgeProfile?.user.name}
 
-                    { u.judgeProfileId == team.leaderId && (
+                    { teamMember && u.judgeProfileId == team.leaderId && (
                     <Image
                       src="/crown.png"
                       alt="Team leader"
