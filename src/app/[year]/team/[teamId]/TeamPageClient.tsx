@@ -102,21 +102,23 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
   }
 
   const removeUser = async (judgeProfileId: string) => {
-    await removeUserToTeams(judgeProfileId, teamId)
-    setTeam((prevTeam) => {
-      if (!prevTeam) return prevTeam
-      return {
-        ...prevTeam,
-        users: prevTeam.users.filter((u) => u.judgeProfileId !== judgeProfileId)
+    let result = await removeUserToTeams(judgeProfileId, teamId)
+    if (result) {
+      setTeam((prevTeam) => {
+        if (!prevTeam) return prevTeam
+        return {
+          ...prevTeam,
+          users: prevTeam.users.filter((u) => u.judgeProfileId !== judgeProfileId)
+        }
+      })
+
+      if (!await getTeamInfo(teamId)) {
+        router.push("/")
       }
-    })
-
-    if (!await getTeamInfo(teamId)) {
-      router.push("/")
-    }
-
-    if (!await isTeamMember(teamId)) {
-      router.refresh()
+  
+      if (!await isTeamMember(teamId)) {
+        router.refresh()
+      }
     }
   }
 
