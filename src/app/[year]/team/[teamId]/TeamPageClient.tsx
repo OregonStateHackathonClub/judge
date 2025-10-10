@@ -167,12 +167,23 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
             <ul className="space-y-2">
               {team.users.map((u: TeamUser) => (
                 <li key={u.judgeProfileId} className="flex items-center justify-between">
-                  <span>{u.judgeProfile?.user.name}</span>
+                  <span className="flex gap-2">
+                    {u.judgeProfile?.user.name}
+
+                    { u.judgeProfileId == team.leaderId && (
+                    <Image
+                      src="/crown.png"
+                      alt="Team leader"
+                      width={20}
+                      height={20}
+                    />
+                  )}
+                  </span>
 
                   { session?.user.id == u.judgeProfileId && (
                     <Image
                       src="/leave-red.png"
-                      alt="Remove user"
+                      alt="Leave team"
                       width={20}
                       height={20}
                       className="cursor-pointer"
