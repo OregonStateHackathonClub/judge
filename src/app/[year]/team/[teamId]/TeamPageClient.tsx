@@ -49,7 +49,7 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
   const [inviteCode, setInviteCode] = useState("")
   const [copied, setCopied] = useState(false)
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   const router = useRouter()
   const { data: session, isPending } = authClient.useSession()
@@ -61,19 +61,25 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
 
   useEffect(() => {
     const fetchTeam = async () => {
-      const updatedTeam = await getTeamInfo(teamId)
-      if (!updatedTeam) {
-        // Cope with your failures
-        toast.error("Failed to find team")
-        return false
+      try {
+        const updatedTeam = await getTeamInfo(teamId)
+        if (!updatedTeam) {
+          // Cope with your failures
+          toast.error("Failed to find team")
+          return false
+        }
+        setTeam(updatedTeam)
+        form.reset({
+          name: updatedTeam.name,
+          contact: updatedTeam.contact ?? "",
+          description: updatedTeam.description ?? "",
+          lookingForTeammates: updatedTeam.lookingForTeammates,
+        })
+      } catch (error) {
+        console.log("Error fetching team: " + error)
+      } finally {
+        setLoading(false)
       }
-      setTeam(updatedTeam)
-      form.reset({
-        name: updatedTeam.name,
-        contact: updatedTeam.contact ?? "",
-        description: updatedTeam.description ?? "",
-        lookingForTeammates: updatedTeam.lookingForTeammates,
-      })
     }
     const fetchInvite = async () => {
       const code = await getInviteCode(teamId)
@@ -124,8 +130,15 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
       }
     }
   }
-
-  if (!team) return <div className="text-center py-10">Loading Team...</div>
+  
+  if (!team) return (
+    <>
+      {loading ? <div className="text-center py-10">Loading Team...</div>
+        : <div className="text-center py-10">Team Not Found.</div>
+      }
+    </>
+    
+  )
 
   return (
     <div className="max-w-4xl mx-auto py-10 space-y-6">
