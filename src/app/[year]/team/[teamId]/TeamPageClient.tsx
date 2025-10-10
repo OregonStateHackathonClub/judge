@@ -52,7 +52,7 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
   const [loading, setLoading] = useState(true)
 
   const router = useRouter()
-  const { data: session, isPending } = authClient.useSession()
+  const { data: session} = authClient.useSession()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -111,7 +111,7 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
   }
 
   const removeUser = async (judgeProfileId: string) => {
-    let result = await removeUserToTeams(judgeProfileId, teamId)
+    const result = await removeUserToTeams(judgeProfileId, teamId)
     if (result) {
       setTeam((prevTeam) => {
         if (!prevTeam) return prevTeam

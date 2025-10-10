@@ -238,7 +238,7 @@ export async function removeUserToTeams(judgeProfileId: string, teamId: string) 
     try {
         const session = await auth.api.getSession({headers: await headers()});
 
-        let team = await prisma.teams.findUnique({
+        const team = await prisma.teams.findUnique({
             where: {
                 teamId: teamId
             }
@@ -265,7 +265,7 @@ export async function removeUserToTeams(judgeProfileId: string, teamId: string) 
             },
         });
 
-        let newTeam = await prisma.teams.findUnique({
+        const newTeam = await prisma.teams.findUnique({
             where: {
                 teamId: teamId
             },
