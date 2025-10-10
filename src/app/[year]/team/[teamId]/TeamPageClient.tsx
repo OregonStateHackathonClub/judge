@@ -15,6 +15,7 @@ import { getInviteCode, getTeamInfo, resetInviteCode, removeUserToTeams, updateT
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { authClient } from "@/lib/authClient"
 
 const formSchema = z.object({
   name: z.string().min(4),
@@ -27,6 +28,7 @@ type TeamInfo = {
   teamId: string;
   name: string;
   description: string | null;
+  leaderId: string | null;
   contact: string | null;
   lookingForTeammates: boolean;
   users: TeamUser[];
@@ -50,6 +52,7 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
   const [loading, setLoading] = useState(false)
 
   const router = useRouter()
+  const { data: session, isPending } = authClient.useSession()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -165,7 +168,19 @@ export default function TeamPageClient({ teamId, year, teamMember }: { teamId: s
               {team.users.map((u: TeamUser) => (
                 <li key={u.judgeProfileId} className="flex items-center justify-between">
                   <span>{u.judgeProfile?.user.name}</span>
-                  {teamMember && (
+
+                  { session?.user.id == u.judgeProfileId && (
+                    <Image
+                      src="/leave-red.png"
+                      alt="Remove user"
+                      width={20}
+                      height={20}
+                      className="cursor-pointer"
+                      onClick={() => removeUser(u.judgeProfileId)}
+                    />
+                  )}
+
+                  { session?.user.id == team.leaderId && session?.user.id != u.judgeProfileId && (
                     <Image
                       src="/trashcan-red.png"
                       alt="Remove user"

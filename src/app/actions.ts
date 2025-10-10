@@ -205,6 +205,7 @@ export async function getTeamInfo(teamId : string) {
           teamId: true,
           name: true,
           description: true,
+          leaderId: true,
           contact: true,
           lookingForTeammates: true,
           users: {
