@@ -57,6 +57,17 @@ export async function sendData(data: {
 }) {    
     // Read JSON data from the submission form
     try {
+        // Determine hackathonId from the team when possible
+        let hackathonId = "2026";
+        if (data.teamId) {
+            const team = await prisma.teams.findUnique({
+                where: { teamId: data.teamId },
+                select: { hackathonId: true },
+            });
+            if (team?.hackathonId) {
+                hackathonId = team.hackathonId;
+            }
+        }
         const submission = await prisma.submissions.create({
             data : {
                 id: randomUUID(),
@@ -70,7 +81,7 @@ export async function sendData(data: {
                 comments: "",
                 rubric: {},
                 score: 0,
-                hackathonId: "2026"
+                hackathonId
             },
         })
         console.log("Created submission", submission)
