@@ -29,6 +29,7 @@ model JudgeProfile {
   user   User   @relation(fields: [userId], references: [id])
 
   teams UsersToTeams[]
+  leadingTeams Teams[]
 
   @@map("judgeProfile")
 }
@@ -63,7 +64,6 @@ model Account {
   password              String?
   createdAt             DateTime
   updatedAt             DateTime
-  Teams                 Teams[]
 
   @@map("account")
 }
@@ -103,7 +103,7 @@ model Teams {
   hackathonId         String
 
   //relations
-  leader     Account?       @relation(fields: [leaderId], references: [id])
+  leader     JudgeProfile?  @relation(fields: [leaderId], references: [userId])
   submission Submissions?   @relation(fields: [submissionId], references: [id])
   hackathon  Hackathons     @relation(fields: [hackathonId], references: [id])
   users      UsersToTeams[]
