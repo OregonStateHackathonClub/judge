@@ -10,15 +10,9 @@ import { useAction } from "next-safe-action/hooks";
 import {
   Form,
 } from "@/components/ui/form";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
 import { MultiStepViewer } from "./components/multiStepViewer";
 import { toast } from 'sonner'
-import Image from "next/image"
+import SubmissionCard from "@/components/submissionCard";
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -91,12 +85,6 @@ export default function DraftForm() {
       toast("Error updating database: " + JSON.stringify(error))
     },
   });
-
-  // function handleSubmit() {
-  //   form.handleSubmit((values) => doSthAction.execute({ ...values, submissionId }));
-  // }
-
-  // const isPending = doSthAction.status === "executing";
   return (
     <div className="flex flex-col lg:flex-row md:my-6 grow justify-center px-4 lg:px-0">
       <Form {...form}>
@@ -112,34 +100,19 @@ export default function DraftForm() {
         </form>
       </Form>
       <div className="min-w-76">
-        <Card className="flex flex-col justify-between transition-shadow overflow-hidden shadow-lg sticky top-4 !pt-0">
-          <div className="relative w-full aspect-[4/3] overflow-hidden border-b h-56">
-            <Image
-              src={(form.watch("photos")?.[0]) || "/beaver.png"}
-              alt={`${form.watch("name")} image`}
-              fill
-              className="object-cover"
-            />
-          </div>
-          <CardHeader className="w-full h-full">
-            <CardTitle>{form.watch("name") || "Title Preview"}</CardTitle>
-            {/* Display track names FIX THIS FOR PREVIEW */}
-            {/* <div className="flex flex-wrap gap-1 mt-1 mb-4">
-              {submission.trackLinks.map((link: any) => (
-                <Badge
-                  variant="secondary"
-                  key={link.trackId}
-                  className="bg-blue-100 text-blue-500"
-                >
-                  {link.track.name}
-                </Badge>
-              ))}
-            </div> */}
-            <CardDescription className="overflow-hidden text-ellipsis whitespace-normal line-clamp-3">
-              {form.watch("description") || "Description Preview"}
-            </CardDescription>
-          </CardHeader>
-        </Card>
+        <SubmissionCard
+          submission={{
+            id: "preview",
+            name: form.watch("name") || "Title Preview",
+            images: (form.watch("photos")) || "/beaver.png",
+            miniDescription: form.watch("description") || "Description Preview",
+            githubURL: form.watch("github") || null,
+            ytVideo: form.watch("youtube") || null,
+            trackLinks: []
+          }}
+          index={0}
+          showOpenButton={false}
+        />
       </div>
     </div>
   );

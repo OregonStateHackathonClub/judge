@@ -221,6 +221,7 @@ export default function SubmissionsClient({
               <SubmissionCard
                 submission={submission}
                 index={index}
+                showOpenButton={true}
               />
             </Link>
           ))}
