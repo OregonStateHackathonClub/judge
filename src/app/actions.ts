@@ -276,6 +276,11 @@ export async function removeUserToTeams(judgeProfileId: string, teamId: string) 
     }
 }
 
+export async function removeUser(judgeProfileId: string) : Promise<boolean> {
+    // Require superadmin
+    return false
+}
+
 // Return invite code if successful. Otherwise, return false
 // Return false if user is not a member of the given team
 export async function getInviteCode(teamId: string) : Promise<string | false> {
