@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { signIn } from "@/lib/authClient";
+import { Loader2, Github } from "lucide-react"; // Import Github icon
+import { signIn as emailSignIn } from "@/lib/authClient"; // Renamed your custom signIn
+import { signIn, signUp } from "@/lib/authClient";
 import { useRouter } from "next/navigation";
 
 export function LoginForm() {
@@ -32,16 +33,12 @@ export function LoginForm() {
               type="email"
               placeholder="BennyDaBeaver@example.com"
               required
-              onChange={(e) => {
-                setEmail(e.target.value);
-              }}
+              onChange={(e) => setEmail(e.target.value)}
               value={email}
             />
           </div>
           <div className="grid gap-2">
-            <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
@@ -53,33 +50,43 @@ export function LoginForm() {
           </div>
           <Button
             type="submit"
-            className=" bg-orange-500 w-full"
+            className="bg-orange-500 w-full"
             disabled={loading}
             onClick={async () => {
-              await signIn.email(
-              {
-                  email,
-                  password
-              },
-              {
-                onRequest: () => {
-                  setLoading(true);
-                },
-                onResponse: () => {
-                  setLoading(false);
-                },
-                onSuccess: async () => {
-										router.push("/");
-								},
-              },
+              // Using your custom email sign-in
+              await emailSignIn.email(
+                { email, password },
+                {
+                  onRequest: () => setLoading(true),
+                  onResponse: () => setLoading(false),
+                  onSuccess: async () => router.push("/"),
+                }
               );
             }}
           >
-            {loading ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <p> Login </p>
-            )}
+            {loading ? <Loader2 size={16} className="animate-spin" /> : <p>Login</p>}
+          </Button>
+
+          {/* Separator */}
+          <div className="relative mt-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-gray-700" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+          
+          {/* GitHub Sign-In Button */}
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => signIn.social({ provider: "github" })}
+          >
+            <Github className="mr-2 h-4 w-4" />
+            GitHub
           </Button>
         </div>
       </CardContent>
