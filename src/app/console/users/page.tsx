@@ -1,12 +1,14 @@
 "use client"
-import { removeUser, userSearch } from "@/app/actions";
-import { PrismaClient } from "@prisma/client";
-import { Suspense, useEffect, useState } from "react";
+import { removeUser, updatePermissions, userSearch } from "@/app/actions";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export default function Page() {
     const [search, setSearch] = useState("");
     const [users, setUsers] = useState<any[]>([]);
+
 
     useEffect(() => {
             const fetchUsers = async () => {
@@ -25,26 +27,45 @@ export default function Page() {
         }
     }
 
+    async function modifyPermissions(judgeProfileId: string, permissionLevel: string) {
+        const res = await updatePermissions(judgeProfileId, permissionLevel)
+        if (!res) {
+            toast.error("Failed to change permissions to " + permissionLevel + ".")
+        }
+    }
+
     function Users() {
 
         return (
             <div className="grid gap-2">
-            {users.map((user) => (
-                <div key={user.id}>
-                    <div className="flex justify-between items-center gap-3 cursor-pointer rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
-                        <div>
-                            <h3 className="font-semibold text-gray-800">{user.name}</h3>
-                            <p className="text-xs">{user.id}</p>
-                        </div>
-                        <div
-                            className="px-3 py-1 rounded-xl hover:shadow-md hover:bg-gray-100 transition-all duration-200"
-                            onClick={() => deleteUser(user.id)}
-                        >
-                            Delete User
+            {users.map((user) => {
+                const [open, setOpen] = useState(false);
+                return (
+                    <div key={user.id}>
+                        <div className="flex justify-between items-center gap-3 cursor-pointer rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
+                            <div>
+                                <h3 className="font-semibold text-gray-800">{user.name}</h3>
+                                <p className="text-xs">{user.id}</p>
+                            </div>
+                            <div className="flex justify-between gap-3">
+                                <Popover open={open} onOpenChange={setOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button variant="outline" className="rounded-xl">
+                                            Change Permissions
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-80 relative">
+                                        <p>hello</p>
+                                    </PopoverContent>
+                                </Popover>
+                                <Button variant="outline" className="rounded-xl" onClick={() => deleteUser(user.id)}>
+                                    Delete User
+                                </Button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            ))}
+                )
+            })}
             </div>
         );
     }

@@ -276,11 +276,6 @@ export async function removeUserToTeams(judgeProfileId: string, teamId: string) 
     }
 }
 
-export async function removeUser(judgeProfileId: string) : Promise<boolean> {
-    // Require superadmin
-    return false
-}
-
 // Return invite code if successful. Otherwise, return false
 // Return false if user is not a member of the given team
 export async function getInviteCode(teamId: string) : Promise<string | false> {
@@ -341,4 +336,31 @@ export async function resetInviteCode(inviteCode: string): Promise<boolean> {
         console.error(error)
         return false
     }
+}
+
+export async function removeUser(judgeProfileId: string) : Promise<boolean> {
+    // Require superadmin
+    return false
+}
+
+export async function getPermissions(judgeProfileId: string, hackathonId: string = "") : Promise<string> {
+
+    // Requires superadmin
+    return ""
+}
+
+export async function updatePermissions(judgeProfileId: string, permissionLevel: string, hackathonId: string = "") : Promise<boolean> {
+    
+    // requires admin or superadmin, depending on the users permission level
+    //permissionLevel == "user"
+
+    // requires admin and hackathonId input
+    //permissionLevel == "judge"
+
+    // requires superadmin and hackathonId input
+    //permissionLevel == "admin"
+
+    // Requires superadmin
+    //permissionLevel == "superadmin"
+    return false
 }

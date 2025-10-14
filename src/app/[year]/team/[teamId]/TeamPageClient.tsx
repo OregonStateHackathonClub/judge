@@ -45,7 +45,7 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
   const [team, setTeam] = useState<TeamInfo | null>(null)
   const [inviteCode, setInviteCode] = useState("")
   const [copied, setCopied] = useState(false)
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
 
   const form = useForm<z.infer<typeof formSchema>>({
