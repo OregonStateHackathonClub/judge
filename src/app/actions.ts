@@ -220,6 +220,37 @@ export async function getTeamInfo(teamId : string) {
       return team
 }
 
+export async function userSearch(search : string) {
+    const users = await prisma.user.findMany({
+        where: {
+            OR: [
+            {
+                name: {
+                    contains: search,
+                    mode: "insensitive",
+                },
+            },
+            {
+                id: {
+                    contains: search,
+                    mode: "insensitive",
+                },
+            },
+            ],
+        },
+        select: {
+            name: true,
+            id: true
+        }
+    });
+
+      if (!users) {
+        return null
+      }
+
+      return users
+}
+
 // Returns true if successful. Otherwise, return false
 // Return false if user is not a member of the given team
 export async function removeUserToTeams(judgeProfileId: string, teamId: string) : Promise<boolean> {
