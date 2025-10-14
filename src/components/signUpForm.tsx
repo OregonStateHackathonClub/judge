@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { Loader2, Github } from "lucide-react";
 import { signUp, signIn } from "@/lib/authClient";
 import { useRouter } from "next/navigation";
@@ -24,6 +24,53 @@ export function SignUpForm() {
     const [passwordConfirmation, setPasswordConfirmation] = useState("");
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const handleEmailSignUp = async (e: FormEvent) => {
+        e.preventDefault();
+        setError(null);
+
+        // Client-side validation
+        if (!firstName || !lastName || !email || !password || !passwordConfirmation) {
+            setError("All fields are required.");
+            return;
+        }
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            setError("Please enter a valid email address.");
+            return;
+        }
+        if (password.length < 8) {
+            setError("Password must be at least 8 characters long.");
+            return;
+        }
+        if (password !== passwordConfirmation) {
+            setError("Passwords do not match.");
+            return;
+        }
+
+        await signUp.email({
+            email,
+            password,
+            name: `${firstName} ${lastName}`,
+            image: "",
+            callbackURL: "/",
+            fetchOptions: {
+                onResponse: () => setLoading(false),
+                onRequest: () => setLoading(true),
+                onError: (ctx) => {
+                    setError(ctx.error.message || "An unknown error occurred.");
+                },
+                onSuccess: async () => {
+                    const res = await createJudgeProfile();
+                    if (res) {
+                        router.push("/");
+                    } else {
+                        setError("Failed to create user profile after sign up.");
+                    }
+                },
+            },
+        });
+    };
 
     return (
         <Card className="z-50 rounded-md max-w-md">
@@ -34,7 +81,7 @@ export function SignUpForm() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="grid gap-4">
+                <form className="grid gap-4" onSubmit={handleEmailSignUp}>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="first-name">First name</Label>
@@ -42,9 +89,8 @@ export function SignUpForm() {
                                 id="first-name"
                                 placeholder="Benny"
                                 required
-                                onChange={(e) => {
-                                    setFirstName(e.target.value);
-                                }}
+                                onChange={(e) => setFirstName(e.target.value)}
+                                onKeyDown={() => setError(null)}
                                 value={firstName}
                             />
                         </div>
@@ -54,9 +100,8 @@ export function SignUpForm() {
                                 id="last-name"
                                 placeholder="Beaver"
                                 required
-                                onChange={(e) => {
-                                    setLastName(e.target.value);
-                                }}
+                                onChange={(e) => setLastName(e.target.value)}
+                                onKeyDown={() => setError(null)}
                                 value={lastName}
                             />
                         </div>
@@ -68,9 +113,8 @@ export function SignUpForm() {
                             type="email"
                             placeholder="BennyDaBeaver@example.com"
                             required
-                            onChange={(e) => {
-                                setEmail(e.target.value);
-                            }}
+                            onChange={(e) => setEmail(e.target.value)}
+                            onKeyDown={() => setError(null)}
                             value={email}
                         />
                     </div>
@@ -81,6 +125,7 @@ export function SignUpForm() {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
+                            onKeyDown={() => setError(null)}
                             autoComplete="new-password"
                             placeholder="Password"
                         />
@@ -92,42 +137,18 @@ export function SignUpForm() {
                             type="password"
                             value={passwordConfirmation}
                             onChange={(e) => setPasswordConfirmation(e.target.value)}
+                            onKeyDown={() => setError(null)}
                             autoComplete="new-password"
                             placeholder="Confirm Password"
                         />
                     </div>
+
+                    {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+
                     <Button
                         type="submit"
                         className="bg-orange-500 hover:bg-orange-300 w-full"
                         disabled={loading}
-                        onClick={async () => {
-                            await signUp.email({
-                                email,
-                                password,
-                                name: `${firstName} ${lastName}`,
-                                image: "",
-                                callbackURL: "/",
-                                fetchOptions: {
-                                    onResponse: () => {
-                                        setLoading(false);
-                                    },
-                                    onRequest: () => {
-                                        setLoading(true);
-                                    },
-                                    onError: (ctx) => {
-                                        console.log(ctx.error.message);
-                                    },
-                                    onSuccess: async () => {
-                                        const res = await createJudgeProfile();
-                                        if (res) {
-                                            router.push("/");
-                                        } else {
-                                            console.error("Database connection failed");
-                                        }
-                                    },
-                                },
-                            });
-                        }}
                     >
                         {loading ? (
                             <Loader2 size={16} className="animate-spin" />
@@ -136,7 +157,6 @@ export function SignUpForm() {
                         )}
                     </Button>
 
-                    {/* Separator */}
                     <div className="relative mt-4">
                       <div className="absolute inset-0 flex items-center">
                         <span className="w-full border-t border-gray-700" />
@@ -157,7 +177,7 @@ export function SignUpForm() {
                       <Github className="mr-2 h-4 w-4" />
                       GitHub
                     </Button>
-                </div>
+                </form>
             </CardContent>
         </Card>
     );
