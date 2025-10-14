@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2, Github } from "lucide-react"; // Import Github icon
 import { signIn as emailSignIn } from "@/lib/authClient"; // Renamed your custom signIn
-import { signIn, signUp } from "@/lib/authClient";
+import { signIn} from "@/lib/authClient";
 import { useRouter } from "next/navigation";
 
 export function LoginForm() {
