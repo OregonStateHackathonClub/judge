@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { ButtonGroup } from "@/components/ui/button-group";
 
 export default function Page() {
     const [search, setSearch] = useState("")
@@ -57,32 +58,22 @@ export default function Page() {
                                         <h3 className="font-semibold text-gray-800">{user.name}</h3>
                                         <p className="text-xs">{user.id}</p>
                                     </div>
-                                    <div className="flex justify-between gap-3">
-                                        <Popover open={open} onOpenChange={setOpen}>
-                                            <PopoverTrigger asChild>
-                                                <Button variant="outline" className="rounded-xl">
-                                                    Change Permissions
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-80 relative">
-                                                { true &&
-                                                <Button variant="outline" className="rounded-xl" onClick={() => modifyPermissions(user.id, "user")}>
-                                                    Promote to SuperUser
-                                                </Button>
-                                                }
+                                    <ButtonGroup>
+                                        { true &&
+                                            <Button variant="outline" className="rounded-xl" onClick={() => modifyPermissions(user.id, "user")}>
+                                                Promote to SuperUser
+                                            </Button>
+                                        }
 
-                                                { false &&
-                                                <Button variant="outline" className="rounded-xl" onClick={() => modifyPermissions(user.id, "user")}>
-                                                    Demote to User
-                                                </Button>
-                                                }
-                                                
-                                            </PopoverContent>
-                                        </Popover>
+                                        { false &&
+                                            <Button variant="outline" className="rounded-xl" onClick={() => modifyPermissions(user.id, "user")}>
+                                                Demote to User
+                                            </Button>
+                                        }
                                         <Button variant="outline" className="rounded-xl" onClick={() => deleteUser(user.id)}>
                                             Delete User
                                         </Button>
-                                    </div>
+                                    </ButtonGroup>
                                 </div>
                             </div>
                         )
