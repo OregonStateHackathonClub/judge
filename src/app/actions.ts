@@ -280,6 +280,8 @@ export async function getTeamInfo(teamId : string) {
 }
 
 export async function userSearch(search : string) {
+    if (!isSuperAdmin()) return false
+
     const users = await prisma.user.findMany({
         where: {
             OR: [
@@ -299,7 +301,12 @@ export async function userSearch(search : string) {
         },
         select: {
             name: true,
-            id: true
+            id: true,
+            judgeProfile: {
+                select: {
+                    superAdmin: true
+                }
+            }
         }
     });
 
@@ -454,6 +461,8 @@ export async function addPermissions(judgeProfileId: string, permissionLevel: st
                 if (!res) {
                     return false
                 }
+            } else {
+                return false
             }
             break
         default:

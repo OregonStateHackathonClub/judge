@@ -1,5 +1,5 @@
 "use client"
-import { removeUser, updatePermissions, userSearch } from "@/app/actions";
+import { removeUser, addPermissions, removePermissions, userSearch } from "@/app/actions";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -12,15 +12,15 @@ export default function Page() {
     const [users, setUsers] = useState<any[]>([])
     const [page, setPage] = useState(1)
 
+    async function fetchUsers() {
+        const res = await userSearch(search)
+        if (!res) return
+        setUsers(res);
+    };
 
     useEffect(() => {
-            const fetchUsers = async () => {
-            const res = await userSearch(search)
-            if (!res) return
-            setUsers(res);
-            };
-            fetchUsers();
-        }, [search]);
+        fetchUsers();
+    }, [search]);
 
     
     async function deleteUser(judgeProfileId: string) {
@@ -30,10 +30,21 @@ export default function Page() {
         }
     }
 
-    async function modifyPermissions(judgeProfileId: string, permissionLevel: string) {
-        const res = await updatePermissions(judgeProfileId, permissionLevel)
-        if (!res) {
-            toast.error("Failed to change permissions to " + permissionLevel + ".")
+    async function addSuperAdmin(judgeProfileId: string) {
+        const res = await addPermissions(judgeProfileId, "superadmin")
+        if (res){
+            fetchUsers();
+        } else {
+            toast.error("Failed to add superadmin.")
+        }
+    }
+
+    async function deleteSuperAdmin(judgeProfileId: string) {
+        const res = await removePermissions(judgeProfileId, "superadmin")
+        if (res) {
+            fetchUsers();
+        } else {
+            toast.error("Failed to remove superadmin.")
         }
     }
 
@@ -50,7 +61,6 @@ export default function Page() {
             <div>
                 <div className="grid gap-2">
                     {currentUsers.map((user) => {
-                        const [open, setOpen] = useState(false);
                         return (
                             <div key={user.id}>
                                 <div className="flex justify-between items-center gap-3 cursor-pointer rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
@@ -59,14 +69,14 @@ export default function Page() {
                                         <p className="text-xs">{user.id}</p>
                                     </div>
                                     <ButtonGroup>
-                                        { true &&
-                                            <Button variant="outline" className="rounded-xl" onClick={() => modifyPermissions(user.id, "user")}>
+                                        { !user?.judgeProfile?.superAdmin &&
+                                            <Button variant="outline" className="rounded-xl" onClick={() => addSuperAdmin(user.id)}>
                                                 Promote to SuperUser
                                             </Button>
                                         }
 
-                                        { false &&
-                                            <Button variant="outline" className="rounded-xl" onClick={() => modifyPermissions(user.id, "user")}>
+                                        { user?.judgeProfile?.superAdmin &&
+                                            <Button variant="outline" className="rounded-xl" onClick={() => deleteSuperAdmin(user.id)}>
                                                 Demote to User
                                             </Button>
                                         }
