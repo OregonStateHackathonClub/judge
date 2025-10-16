@@ -1,10 +1,69 @@
 'use server'
 
-import { Prisma, PrismaClient } from "@prisma/client";
+import { Role, Prisma, PrismaClient } from "@prisma/client";
 import { auth } from "@/lib/auth"; // your Better Auth instance
 import { headers } from "next/headers";
 
 const prisma = new PrismaClient({})
+
+export async function isSuperAdmin() : Promise<boolean> {
+    const session = await auth.api.getSession({headers: await headers()});
+
+    if (!session) {
+        return false
+    }
+
+    const judgeProfile = await prisma.judgeProfile.findUnique({
+        where: {
+            userId: session.user.id
+        }
+    })
+
+    if (!judgeProfile) return false
+
+    return judgeProfile.superAdmin
+}
+
+export async function isAdmin(hackathonId: string) : Promise<boolean> {
+
+    if (await isSuperAdmin()) return true
+
+    const session = await auth.api.getSession({headers: await headers()});
+
+    if (!session) {
+        return false
+    }
+
+    const judgeProfile = await prisma.hackathonsRole.findFirst({
+        where: {
+            judgeProfileId: session.user.id,
+            hackathonId: hackathonId
+        }
+    })
+
+    if (!judgeProfile) return false
+
+    return judgeProfile.role === Role.ADMIN
+}
+
+export async function isJudge(hackathonId: string) : Promise<boolean> {
+    const session = await auth.api.getSession({headers: await headers()});
+
+    if (!session) {
+        return false
+    }
+
+    const judgeProfile = await prisma.hackathonsRole.findFirst({
+        where: {
+            judgeProfileId: session.user.id,
+            hackathonId: hackathonId
+        }
+    })
+
+    if (!judgeProfile) return false
+
+    return judgeProfile.role === Role.JUDGE
+}
 
 // Return true if user is logged in and a part of the given team. Otherwise, returns false
 export async function isTeamMember(teamId : string) : Promise<boolean> {
@@ -343,24 +402,124 @@ export async function removeUser(judgeProfileId: string) : Promise<boolean> {
     return false
 }
 
-export async function getPermissions(judgeProfileId: string, hackathonId: string = "") : Promise<string> {
+export async function addPermissions(judgeProfileId: string, permissionLevel: string, hackathonId: string = "") : Promise<boolean> {
+    switch (permissionLevel) {
+        case "judge":
+            // requires admin and hackathonId input
+            if (await isAdmin(hackathonId) && hackathonId != "") {
+                const res = await prisma.hackathonsRole.create({
+                    data: {
+                        hackathonId: hackathonId,
+                        judgeProfileId: judgeProfileId,
+                        role: Role.JUDGE,
+                    },
+                })
 
-    // Requires superadmin
-    return ""
+                if (!res) {
+                    return false
+                }
+            } else {
+                return false
+            }
+            break
+        case "admin":
+            // requires superadmin and hackathonId input
+            if (await isSuperAdmin() && hackathonId != "") {
+                const res = await prisma.hackathonsRole.create({
+                    data: {
+                        hackathonId: hackathonId,
+                        judgeProfileId: judgeProfileId,
+                        role: Role.ADMIN,
+                    },
+                })
+
+                if (!res) {
+                    return false
+                }
+            } else {
+                return false
+            }
+            break
+        case "superadmin":
+            if (await isSuperAdmin()) {
+                const res = await prisma.judgeProfile.update({
+                    data: {
+                        superAdmin: true,
+                    },
+                    where: {
+                        userId: judgeProfileId
+                    }
+                })
+
+                if (!res) {
+                    return false
+                }
+            }
+            break
+        default:
+            return false
+    }
+
+    return true
 }
 
-export async function updatePermissions(judgeProfileId: string, permissionLevel: string, hackathonId: string = "") : Promise<boolean> {
-    
-    // requires admin or superadmin, depending on the users permission level
-    //permissionLevel == "user"
+export async function removePermissions(judgeProfileId: string, permissionLevel: string, hackathonId: string = "") : Promise<boolean> {
+    switch (permissionLevel) {
+        case "judge":
+            // requires admin and hackathonId input
+            if (await isAdmin(hackathonId) && hackathonId != "") {
+                const res = await prisma.hackathonsRole.deleteMany({
+                    where: {
+                        hackathonId: hackathonId,
+                        judgeProfileId: judgeProfileId,
+                        role: Role.JUDGE,
+                    },
+                })
 
-    // requires admin and hackathonId input
-    //permissionLevel == "judge"
+                if (!res) {
+                    return false
+                }
+            } else {
+                return false
+            }
+            break
+        case "admin":
+            // requires superadmin and hackathonId input
+            if (await isSuperAdmin() && hackathonId != "") {
+                const res = await prisma.hackathonsRole.deleteMany({
+                    where: {
+                        hackathonId: hackathonId,
+                        judgeProfileId: judgeProfileId,
+                        role: Role.ADMIN,
+                    },
+                })
 
-    // requires superadmin and hackathonId input
-    //permissionLevel == "admin"
+                if (!res) {
+                    return false
+                }
+            } else {
+                return false
+            }
+            break
+        case "superadmin":
+            if (await isSuperAdmin()) {
+                const res = await prisma.judgeProfile.update({
+                    data: {
+                        superAdmin: false,
+                    },
+                    where: {
+                        userId: judgeProfileId
+                    }
+                })
 
-    // Requires superadmin
-    //permissionLevel == "superadmin"
-    return false
+                if (!res) {
+                    return false
+                }
+            }
+            break
+        default:
+            return false
+    }
+
+    return true
 }
