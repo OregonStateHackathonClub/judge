@@ -5,6 +5,7 @@ import { ChevronDown, Filter } from "lucide-react";
 import SubmissionCard from "@/components/submissionCard";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation"
 
 // Define specific types for your data
 interface Track {
@@ -54,6 +55,7 @@ export default function SubmissionsClient({
   const [filteredSubmissions, setFilteredSubmissions] = useState<Submission[]>(
     hackathon.submissions
   );
+  const router = useRouter()
 
   useEffect(() => {
     if (selectedTrack === "all") {
@@ -71,6 +73,10 @@ export default function SubmissionsClient({
   const handleTrackChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedTrack(e.target.value);
   };
+
+  const handleProjectClick = (submissionId: string) => {
+    router.push(`/${year}/projects/${submissionId}`)
+  }
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-200">
@@ -215,15 +221,13 @@ export default function SubmissionsClient({
         {/* Submissions grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
           {filteredSubmissions.map((submission: Submission, index: number) => (
-            <Link href={`/${year}/projects/${submission.id}`}
-                key={submission.id}
-            >
               <SubmissionCard
+                key={submission.id}
                 submission={submission}
                 index={index}
                 showOpenButton={true}
+                onClick={() => handleProjectClick(submission.id)}
               />
-            </Link>
           ))}
         </div>
 
