@@ -80,7 +80,7 @@ export default function FormClient({ initialData }: { initialData: Promise<Initi
             images: (form.watch("photos")) || "/beaver.png",
             miniDescription: form.watch("description") || "Description Preview",
             githubURL: form.watch("github") || null,
-            ytVideo: form.watch("github") || null,
+            ytVideo: form.watch("youtube") || null,
             trackLinks: []
           }}
           index={0}
