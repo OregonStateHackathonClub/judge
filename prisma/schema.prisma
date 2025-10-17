@@ -81,7 +81,7 @@ model Verification {
 
 model Hackathons {
   id          String        @id
-  name        String        
+  name        String        @unique
   sponsors    String
   rubric      Json
   description String?
