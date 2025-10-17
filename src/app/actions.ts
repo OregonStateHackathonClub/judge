@@ -90,6 +90,17 @@ export async function createTeam(teamData: Prisma.TeamsCreateInput, addSelf : bo
             data: teamData,
         })
 
+        // Add leader
+
+        await prisma.teams.update({
+            data: {
+                leader: { connect: { userId: session?.user.id } },
+            },
+            where: {
+                teamId: newTeam.teamId
+            }
+        })
+
         if (addSelf) {
             if (userId == null) {
                 return false
@@ -194,6 +205,7 @@ export async function getTeamInfo(teamId : string) {
           teamId: true,
           name: true,
           description: true,
+          leaderId: true,
           contact: true,
           lookingForTeammates: true,
           users: {
@@ -224,8 +236,16 @@ export async function getTeamInfo(teamId : string) {
 // Return false if user is not a member of the given team
 export async function removeUserToTeams(judgeProfileId: string, teamId: string) : Promise<boolean> {
     try {
+        const session = await auth.api.getSession({headers: await headers()});
 
-        if (!await isTeamMember(teamId)) {
+        const team = await prisma.teams.findUnique({
+            where: {
+                teamId: teamId
+            }
+        })
+
+        if (!team || (team.leaderId != session?.user.id && judgeProfileId != session?.user.id)) {
+            // Cope
             return false
         }
 
@@ -236,7 +256,55 @@ export async function removeUserToTeams(judgeProfileId: string, teamId: string) 
                 teamId
             }
             },
+            select: {
+                team: {
+                    select: {
+                        users: true,
+                    },
+                },
+            },
         });
+
+        const newTeam = await prisma.teams.findUnique({
+            where: {
+                teamId: teamId
+            },
+            select: {
+                users: true,
+            }
+        })
+
+        if (newTeam == null) {
+            // Cry like a baby
+            return false;
+        }
+
+        // Delete team if no members left
+        if (newTeam.users.length === 0) {
+
+            await prisma.invites.deleteMany({
+                where: {
+                    teamId: teamId
+                },
+            })
+
+
+            await prisma.teams.delete({
+                where: {
+                    teamId: teamId
+                },
+            })
+        // Replace leader if necessary
+        } else if (team.leaderId == judgeProfileId) {
+            await prisma.teams.update({
+                data: {
+                    leaderId: newTeam.users[0].judgeProfileId
+                },
+                where: {
+                    teamId: teamId
+                }
+            })
+        }
 
         return true
     } catch (error) {
