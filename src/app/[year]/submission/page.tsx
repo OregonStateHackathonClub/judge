@@ -1,34 +1,59 @@
 import { Suspense } from "react";
+import { prisma } from "@/lib/prisma";
+import FormClient, { type InitialFormData } from "./FormClient";
+import Loading from "./loading";
 
-const fetchUserWithDelay = () =>
-  new Promise((res) =>
-    setTimeout(
-      async () => res(await (await fetch("https://randomuser.me/api/")).json()),
-      2000
-    )
-  );
+async function getInitialData(searchParams: { teamId?: string | null; edit?: string | null }): Promise<InitialFormData> {
+  const teamId = searchParams?.teamId ?? null;
+  const editId = searchParams?.edit ?? null;
 
-// do not do this in production- always add a fallback with suspense or a loading.tsx when using an async component
-export default async function Page(props: { params: Promise<{ year: string }> }) {
-	const params = await props.params
-  const write = async () => {
-    "use server";
+  if (editId) {
+    const submission = await prisma.submissions.findUnique({
+      where: { id: editId },
+      select: {
+        id: true,
+        name: true,
+        miniDescription: true,
+        bio: true,
+        githubURL: true,
+        ytVideo: true,
+        images: true,
+        status: true,
+      },
+    });
+    if (submission) {
+      return {
+        submissionId: submission.id,
+        teamId,
+        name: submission.name || "",
+        description: submission.miniDescription || "",
+        mainDescription: submission.bio || "",
+        github: submission.githubURL || "",
+        youtube: submission.ytVideo || "",
+        photos: submission.images || [],
+        status: submission.status || "draft",
+      };
+    }
+  }
 
-    console.log("test");
+  return {
+    submissionId: null,
+    teamId,
+    name: "",
+    description: "",
+    mainDescription: "",
+    github: "",
+    youtube: "",
+    photos: [],
+    status: "draft",
   };
-
-  return (
-    <>
-      <button onClick={write}>test server action</button>
-      <Suspense fallback={"Loading..."}>
-        <PeopleData />
-      </Suspense>
-			{params.year}
-    </>
-  );
 }
 
-async function PeopleData() {
-  const data = await fetchUserWithDelay();
-  return <div>{JSON.stringify(data)}</div>;
+export default function DraftForm(props: { searchParams: Promise<{ teamId?: string; edit?: string }> }) {
+  const initialDataPromise: Promise<InitialFormData> = props.searchParams.then((sp) => getInitialData(sp));
+  return (
+    <Suspense fallback={<Loading />}> 
+      <FormClient initialData={initialDataPromise} />
+    </Suspense>
+  );
 }

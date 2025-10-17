@@ -1,5 +1,7 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @import "tw-animate-css";
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -114,6 +116,32 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+.prose {
+    /* Properly style inline codeblocks */
+    :where(code):not(:where([class~="not-prose"], [class~="not-prose"] *)):not(
+            pre > code
+        ) {
+        &::before,
+        &::after {
+            content: "" !important;
+        }
+
+        @apply rounded-full bg-zinc-900/40 px-1.5 py-1 font-normal text-zinc-100 ring ring-white/10 backdrop-blur-sm;
+    }
+
+  blockquote {
+    @apply bg-osu-orange/10 border-l-4 border-osu-orange;
+  }
+
+  blockquote p {
+    @apply text-black;
+  }
+
+  blockquote a {
+    @apply text-osu-orange;
+  }
 }
 
 @layer base {

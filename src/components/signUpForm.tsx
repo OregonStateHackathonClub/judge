@@ -15,6 +15,7 @@ import { Loader2, Github } from "lucide-react";
 import { signUp, signIn } from "@/lib/authClient";
 import { useRouter } from "next/navigation";
 import { createJudgeProfile } from "@/app/actions";
+import { toast } from 'sonner'
 
 export function SignUpForm() {
     const [firstName, setFirstName] = useState("");

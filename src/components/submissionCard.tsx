@@ -25,14 +25,16 @@ type Submission = {
 
 interface SubmissionCardProps {
   submission: Submission;
-  onClick: () => void;
   index: number;
+  onClick: () => void;
+  showOpenButton: boolean;
 }
 
 export default function SubmissionCard({
   submission,
   onClick,
   index,
+  showOpenButton
 }: SubmissionCardProps) {
   const img = submission.images?.[0] || "/beaver.png";
 
@@ -89,15 +91,17 @@ export default function SubmissionCard({
             githubURL={submission.githubURL ?? null}
             ytVideo={submission.ytVideo ?? null}
           />
-          <button
-            className="ml-auto inline-flex items-center rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition hover:border-orange-500/50 hover:bg-neutral-800 hover:cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              onClick();
-            }}
-          >
-            Open →
-          </button>
+          {showOpenButton && (
+            <button
+              className="ml-auto inline-flex items-center rounded-xl border border-neutral-800 bg-neutral-900 px-2.5 py-1.5 text-xs text-neutral-200 transition hover:border-orange-500/50 hover:bg-neutral-800 hover:cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick()
+              }}
+            >
+              Open →
+            </button>
+          )}
         </div>
       </CardFooter>
     </Card>
