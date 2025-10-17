@@ -27,9 +27,11 @@ model User {
 model JudgeProfile {
   userId String @id
   user   User   @relation(fields: [userId], references: [id])
+  superAdmin Boolean @default(false)
 
-  teams UsersToTeams[]
-  leadingTeams Teams[]
+  teams          UsersToTeams[]
+  leadingTeams   Teams[]
+  hackathonsRole HackathonsRole[]
 
   @@map("judgeProfile")
 }
@@ -80,16 +82,35 @@ model Verification {
 }
 
 model Hackathons {
-  id          String        @id
-  name        String        
-  sponsors    String
-  rubric      Json
-  description String?
-  teams       Teams[]
-  submissions Submissions[]
-  tracks      Tracks[]
+  id             String           @id
+  name           String           @unique
+  sponsors       String
+  rubric         Json
+  description    String?
+  teams          Teams[]
+  submissions    Submissions[]
+  tracks         Tracks[]
+  hackathonsRole HackathonsRole[]
 
   @@map("hackathons")
+}
+
+enum Role {
+  ADMIN
+  JUDGE
+}
+
+model HackathonsRole {
+  hackathonId    String
+  judgeProfileId String
+  role           Role
+
+  // relations
+  hackathon      Hackathons   @relation(fields: [hackathonId], references: [id])
+  judgeProfile   JudgeProfile @relation(fields: [judgeProfileId], references: [userId])
+
+  @@id([hackathonId, judgeProfileId])
+  @@map("hackathonRole")
 }
 
 model Teams {

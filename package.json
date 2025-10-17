@@ -10,6 +10,7 @@
     "db:generate": "dotenv -e .env.local -- npx prisma generate",
     "db:migrate": "dotenv -e .env.local -- npx prisma migrate dev",
     "db:push": "dotenv -e .env.local -- npx prisma db push",
+    "db:format": "dotenv -e .env.local -- npx prisma format",
     "db:studio": "dotenv -e .env.local -- npx prisma studio"
   },
   "dependencies": {
