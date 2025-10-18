@@ -67,6 +67,7 @@ export default function Home({ params }: { params: Promise<{ year: string }> }) 
       description: values.description,
       contact: values.contact,
       hackathon: { connect: { id: hackathonId } },
+      // leader: { connect: { userId: session?.user.id } },
     }
     const teamId = await createTeam(teamData, true)
 

@@ -11,9 +11,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
-import { getInviteCode, getTeamInfo, resetInviteCode, removeUserToTeams, updateTeam } from "@/app/actions"
+import { getInviteCode, getTeamInfo, resetInviteCode, removeUserToTeams, updateTeam, isTeamMember } from "@/app/actions"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import { authClient } from "@/lib/authClient"
 
 const formSchema = z.object({
   name: z.string().min(4),
@@ -26,6 +28,7 @@ type TeamInfo = {
   teamId: string;
   name: string;
   description: string | null;
+  leaderId: string | null;
   contact: string | null;
   lookingForTeammates: boolean;
   users: TeamUser[];
@@ -40,13 +43,16 @@ type TeamUser = {
   } | null;
 };
 
-export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId: string, year: string, isTeamMember: boolean }) {
+export default function TeamPageClient({ teamId, year, teamMember }: { teamId: string, year: string, teamMember: boolean }) {
   const [editing, setEditing] = useState(false)
   const [team, setTeam] = useState<TeamInfo | null>(null)
   const [inviteCode, setInviteCode] = useState("")
   const [copied, setCopied] = useState(false)
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  const router = useRouter()
+  const { data: session} = authClient.useSession()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,19 +61,25 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
 
   useEffect(() => {
     const fetchTeam = async () => {
-      const updatedTeam = await getTeamInfo(teamId)
-      if (!updatedTeam) {
-        // Cope with your failures
-        toast.error("Failed to find team")
-        return false
+      try {
+        const updatedTeam = await getTeamInfo(teamId)
+        if (!updatedTeam) {
+          // Cope with your failures
+          toast.error("Failed to find team")
+          return false
+        }
+        setTeam(updatedTeam)
+        form.reset({
+          name: updatedTeam.name,
+          contact: updatedTeam.contact ?? "",
+          description: updatedTeam.description ?? "",
+          lookingForTeammates: updatedTeam.lookingForTeammates,
+        })
+      } catch (error) {
+        console.log("Error fetching team: " + error)
+      } finally {
+        setLoading(false)
       }
-      setTeam(updatedTeam)
-      form.reset({
-        name: updatedTeam.name,
-        contact: updatedTeam.contact ?? "",
-        description: updatedTeam.description ?? "",
-        lookingForTeammates: updatedTeam.lookingForTeammates,
-      })
     }
     const fetchInvite = async () => {
       const code = await getInviteCode(teamId)
@@ -82,8 +94,6 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
     (inviteCode == "") ? "Generating..." : `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}/invite/${inviteCode}`,
     [year, inviteCode]
   )
-
-  // const getLink = () => `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/${year}/invite/${inviteCode}`
 
   const copyLink = async () => {
     await navigator.clipboard.writeText(getLink())
@@ -101,17 +111,34 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
   }
 
   const removeUser = async (judgeProfileId: string) => {
-    await removeUserToTeams(judgeProfileId, teamId)
-    setTeam((prevTeam) => {
-      if (!prevTeam) return prevTeam
-      return {
-        ...prevTeam,
-        users: prevTeam.users.filter((u) => u.judgeProfileId !== judgeProfileId)
-      }
-    })
-  }
+    const result = await removeUserToTeams(judgeProfileId, teamId)
+    if (result) {
+      setTeam((prevTeam) => {
+        if (!prevTeam) return prevTeam
+        return {
+          ...prevTeam,
+          users: prevTeam.users.filter((u) => u.judgeProfileId !== judgeProfileId)
+        }
+      })
 
-  if (!team) return <div className="text-center py-10">Loading Team...</div>
+      if (!await getTeamInfo(teamId)) {
+        router.push("/")
+      }
+
+      if (!await isTeamMember(teamId)) {
+        window.location.reload()
+      }
+    }
+  }
+  
+  if (!team) return (
+    <>
+      {loading ? <div className="text-center py-10">Loading Team...</div>
+        : <div className="text-center py-10">Team Not Found.</div>
+      }
+    </>
+    
+  )
 
   return (
     <div className="max-w-4xl mx-auto py-10 space-y-6">
@@ -125,7 +152,7 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
             </span>
           )}
         </div>
-        {isTeamMember && !editing && (
+        {teamMember && !editing && (
           <Button
             variant="outline"
             className="rounded-xl"
@@ -153,8 +180,31 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
             <ul className="space-y-2">
               {team.users.map((u: TeamUser) => (
                 <li key={u.judgeProfileId} className="flex items-center justify-between">
-                  <span>{u.judgeProfile?.user.name}</span>
-                  {isTeamMember && (
+                  <span className="flex gap-2">
+                    {u.judgeProfile?.user.name}
+
+                    { teamMember && u.judgeProfileId == team.leaderId && (
+                    <Image
+                      src="/crown.png"
+                      alt="Team leader"
+                      width={20}
+                      height={20}
+                    />
+                  )}
+                  </span>
+
+                  { session?.user.id == u.judgeProfileId && (
+                    <Image
+                      src="/leave-red.png"
+                      alt="Leave team"
+                      width={20}
+                      height={20}
+                      className="cursor-pointer"
+                      onClick={() => removeUser(u.judgeProfileId)}
+                    />
+                  )}
+
+                  { session?.user.id == team.leaderId && session?.user.id != u.judgeProfileId && (
                     <Image
                       src="/trashcan-red.png"
                       alt="Remove user"
@@ -169,7 +219,7 @@ export default function TeamPageClient({ teamId, year, isTeamMember }: { teamId:
             </ul>
   
             {/* Invite Link */}
-            {team.users.length < 4 && isTeamMember && (
+            {team.users.length < 4 && teamMember && (
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="mt-4 rounded-xl w-full">
