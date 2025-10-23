@@ -23,7 +23,6 @@ const nextConfig: NextConfig = {
     turbopackFileSystemCacheForDev: true,
     authInterrupts: true,
   },
-  cacheComponents: true,
   reactCompiler: true,
 };
 
