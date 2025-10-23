@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 export default async function RootPage() {
   // Find the most recent hackathon by ordering by ID in descending order
   // and taking the first one. This ensures you always get the latest.
-  const currentHackathonId = await getCurrentHackathonId()
+  const currentHackathonId = await getCurrentHackathonId();
 
   // If a hackathon is found in the database, redirect to its page.
   if (currentHackathonId) {

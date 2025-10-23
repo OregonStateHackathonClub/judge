@@ -9,6 +9,7 @@ import { toast } from "sonner";
 export default function InvitePageClient({ code, year }: { code : string, year: string }) {
 
     const [failed, setFailed] = useState(false)
+    const [redirecting, setRedirecting] = useState(false);
 
     const router = useRouter()
 
@@ -24,19 +25,23 @@ export default function InvitePageClient({ code, year }: { code : string, year: 
                 setFailed(true)
                 return
             }
-    
+
+            setRedirecting(true)
             await router.push(`/${year}/team/${teamId}`);
         }
 
         if (!isPending && session) {
             addToTeam();
           } else if (!isPending && !session) {
+            setRedirecting(true)
             router.push("/log-in");
           }
 
     }, [isPending, session, router, code, year]);
 
-    if (!session) {
+    if (redirecting){
+        return null;
+    } else if (!session) {
         return <div>Loading...</div>;
     } else if (failed) {
         return <div>Failed to add you to the team.</div>

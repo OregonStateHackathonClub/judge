@@ -4,7 +4,7 @@ import { isTeamMember } from "@/app/actions";
 
 async function TeamLoader({ year, teamId }: { year: string; teamId: string }) {
   const teamMember = await isTeamMember(teamId)
-  return <TeamPageClient year={year} teamId={teamId} isTeamMember={teamMember} />
+  return <TeamPageClient year={year} teamId={teamId} teamMember={teamMember} />
   
 }
 

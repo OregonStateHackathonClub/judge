@@ -9,11 +9,18 @@ export default async function Page(props: { params: Promise<{ year: string }> })
   const params = await props.params;
   const yearParam = params.year;
 
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  let session: Awaited<ReturnType<typeof auth.api.getSession>> | null = null;
+  try {
+    session = await auth.api.getSession({
+      headers: await headers(),
+    });
+  } catch (e) {
+    console.error("Session retrieval failed", e);
+    session = null;
+  }
 
   let userTeamId: string | null = null;
+  let teamSubmission: { id: string; status: string } | null = null;
    if (session?.user) {
     const teamMembership = await prisma.teams.findFirst({
       where: {
@@ -26,10 +33,16 @@ export default async function Page(props: { params: Promise<{ year: string }> })
       },
       select: {
         teamId: true,
+        submission: {
+          select: { id: true, status: true },
+        },
       },
     });
     if (teamMembership) {
       userTeamId = teamMembership.teamId;
+      if (teamMembership.submission) {
+        teamSubmission = teamMembership.submission;
+      }
     }
   }
 
@@ -93,6 +106,7 @@ export default async function Page(props: { params: Promise<{ year: string }> })
       tracks={hackathon.tracks}
       year={yearParam}
       userTeamId={userTeamId}
+      teamSubmission={teamSubmission}
     />
   );
 }
