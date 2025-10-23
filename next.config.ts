@@ -14,13 +14,17 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "*.public.blob.vercel-storage.com",
-      }
+      },
       // You can add other trusted domains here
     ],
   },
   experimental: {
     useCache: true,
+    turbopackFileSystemCacheForDev: true,
+    authInterrupts: true,
   },
+  cacheComponents: true,
+  reactCompiler: true,
 };
 
 export default nextConfig;

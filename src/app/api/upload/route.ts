@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import { put, del } from "@vercel/blob";
 
-// Optional: run on edge for lower latency
-export const runtime = "edge";
-
 // Very lightweight in-memory rate limiter per IP (best-effort only).
 const lastRequestByIp = new Map<string, number>();
 const MIN_INTERVAL_MS = 3000; // 3s between uploads per IP

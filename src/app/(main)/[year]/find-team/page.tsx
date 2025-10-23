@@ -1,14 +1,16 @@
 import { Suspense } from "react";
 import { PrismaClient } from "@prisma/client";
 import Link from "next/link";
+import { getCurrentHackathonId } from "@/lib/queries";
 
 async function Teams() {
   const data = await GetTeams();
+  const hackathonId = await getCurrentHackathonId()
 
   return (
     <div className="grid gap-4">
       {data.map((team) => (
-        <Link key={team.teamId} href={`team/${team.teamId}`}>
+        <Link key={team.teamId} href={`/${hackathonId}/team/${team.teamId}`}>
           <div className="cursor-pointer rounded-xl border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200">
             <h3 className="text-lg font-semibold text-gray-800">{team.name}</h3>
             {team.description && (

@@ -22,7 +22,10 @@ const HackathonHomepageButtonWrapper = async () => {
 };
 
 const HackathonHomepageButton = ({ link = "/" }: { link?: string }) => (
-  <Link href={link} className="flex gap-5 items-center p-5 hover:bg-gray-200">
+  <Link
+    href={{ pathname: link }}
+    className="flex gap-5 items-center p-5 hover:bg-gray-200"
+  >
     <div className="w-10 h-10 relative">
       <Image src="/beaver.png" alt="beaver" fill />
     </div>
