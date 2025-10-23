@@ -6,7 +6,13 @@
 		"useIgnoreFile": false
 	},
 	"files": {
-		"includes": ["**", "!**/dist", "!.next", "!src/components/ui"]
+		"includes": [
+			"src/**",
+			"!src/components/ui",
+			"prisma/**",
+			"biome.jsonc",
+			"components.json"
+		]
 	},
 	"formatter": { "enabled": true, "indentWidth": 2, "indentStyle": "tab" },
 	"linter": {
