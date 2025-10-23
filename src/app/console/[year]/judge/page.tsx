@@ -4,5 +4,5 @@
 // technically judges are assigned to teams, not submission
 
 export default function Page() {
-	return ""
+	return "";
 }

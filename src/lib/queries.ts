@@ -6,15 +6,15 @@
 import { prisma } from "./prisma";
 
 export const getCurrentHackathonId = async () => {
-  const currentHackathon = await prisma.hackathons.findFirst({
-    orderBy: {
-      id: "desc",
-    },
-    select: {
-      id: true, // We only need the ID for the redirect
-    },
-    // TODO: query for active hackathon instead
-  });
+	const currentHackathon = await prisma.hackathons.findFirst({
+		orderBy: {
+			id: "desc",
+		},
+		select: {
+			id: true, // We only need the ID for the redirect
+		},
+		// TODO: query for active hackathon instead
+	});
 
-  return currentHackathon?.id;
+	return currentHackathon?.id;
 };

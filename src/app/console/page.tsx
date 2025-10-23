@@ -5,14 +5,8 @@ export default function Page() {
 
 	// judge/admin that only has access to one hackathon will be automaticlly redirected to /console/id
 
-	// superadmin or judge/admin with multiple hackathons will be able to see a list of them. 
+	// superadmin or judge/admin with multiple hackathons will be able to see a list of them.
 	// superadmins can create new ones
 
-	
-
-	return (
-		<div className="flex items-center justify-center">
-			Homepage here
-		</div>
-	)
+	return <div className="flex items-center justify-center">Homepage here</div>;
 }

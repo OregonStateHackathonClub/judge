@@ -1,0 +1,57 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.2.7/schema.json",
+	"vcs": {
+		"enabled": false,
+		"clientKind": "git",
+		"useIgnoreFile": false
+	},
+	"files": {
+		"includes": ["**", "!**/dist", "!.next", "!src/components/ui"]
+	},
+	"formatter": { "enabled": true, "indentWidth": 2, "indentStyle": "tab" },
+	"linter": {
+		"domains": {
+			"next": "all",
+			"tailwind": "all"
+		},
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"correctness": {
+				"noUnusedImports": {
+					"fix": "safe",
+					"level": "warn",
+					"options": {}
+				},
+				"noUndeclaredVariables": "error"
+			},
+			"nursery": {
+				"useSortedClasses": {
+					"level": "warn",
+					// force this fix to be safe so that vscode will autoapply it on format
+					"fix": "safe",
+					"options": {
+						"attributes": ["className"]
+					}
+				}
+			},
+			"suspicious": {
+				// doesn't play well with tailwind. fixed in biome 2.3
+				"noUnknownAtRules": "off"
+			}
+		}
+	},
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
+	}
+}
