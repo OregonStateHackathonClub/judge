@@ -297,11 +297,18 @@ export async function userSearch(search : string) {
                     mode: "insensitive",
                 },
             },
+            {
+                email: {
+                    contains: search,
+                    mode: "insensitive",
+                },
+            }
             ],
         },
         select: {
             name: true,
             id: true,
+            email: true,
             judgeProfile: {
                 select: {
                     superAdmin: true

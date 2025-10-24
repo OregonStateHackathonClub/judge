@@ -1,6 +1,5 @@
 "use client"
 import { removeUser, addPermissions, removePermissions, userSearch } from "@/app/actions";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,14 @@ export default function Page() {
         fetchUsers();
     }, [search]);
 
+    async function copyString(toCopy: string) {
+        try {
+            await navigator.clipboard.writeText(toCopy);
+            toast.success('UserId opied to clipboard');
+        } catch (err) {
+            toast.error('Failed to copy text');
+        }
+    }
     
     async function deleteUser(judgeProfileId: string) {
         const res = await removeUser(judgeProfileId)
@@ -66,9 +73,13 @@ export default function Page() {
                                 <div className="flex justify-between items-center gap-3 cursor-pointer rounded-xl border border-gray-200 bg-white p-2 shadow-sm">
                                     <div>
                                         <h3 className="font-semibold text-gray-800">{user.name}</h3>
-                                        <p className="text-xs">{user.id}</p>
+                                        <p className="text-xs">{user.email}</p>
                                     </div>
                                     <ButtonGroup>
+                                        <Button variant="outline" className="rounded-xl" onClick={() => copyString(user.id)}>
+                                            Copy UserId
+                                        </Button>
+
                                         { !user?.judgeProfile?.superAdmin &&
                                             <Button variant="outline" className="rounded-xl" onClick={() => addSuperAdmin(user.id)}>
                                                 Promote to SuperUser
