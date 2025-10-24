@@ -18,7 +18,7 @@ export const Navbar = () => {
 const HackathonHomepageButtonWrapper = async () => {
 	const currentHackathonId = await getCurrentHackathonId();
 
-	return <HackathonHomepageButton link={currentHackathonId} />;
+	return <HackathonHomepageButton link={`/${currentHackathonId}`} />;
 };
 
 const HackathonHomepageButton = ({ link = "/" }: { link?: string }) => (

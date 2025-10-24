@@ -173,7 +173,7 @@ export default function TeamPageClient({
 		);
 
 	return (
-		<div className="mx-auto max-w-4xl space-y-6 py-10">
+		<div className="mx-auto max-w-4xl w-full space-y-6 py-10">
 			{/* Team Header */}
 			<div className="flex items-center justify-between rounded-xl bg-white p-6 shadow-md">
 				<div>
