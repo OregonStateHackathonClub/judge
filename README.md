@@ -23,6 +23,21 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+Also make sure to run 
+```bash
+npm run db:generate
+# or
+pnpm db:generate
+```
+
+You can view the db in the browser with
+```bash
+npm run db:studio
+# or
+pnpm db:studio
+```
+
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

@@ -1,10 +1,10 @@
-'use server'
+"use server";
 
-import { Role, Prisma, PrismaClient } from "@prisma/client";
-import { auth } from "@/lib/auth"; // your Better Auth instance
+import { type Prisma, PrismaClient, Role } from "@prisma/client";
 import { headers } from "next/headers";
+import { auth } from "@/lib/auth"; // your Better Auth instance
 
-const prisma = new PrismaClient({})
+const prisma = new PrismaClient({});
 
 export async function isSuperAdmin() : Promise<boolean> {
     const session = await auth.api.getSession({headers: await headers()});
@@ -66,217 +66,234 @@ export async function isJudge(hackathonId: string) : Promise<boolean> {
 }
 
 // Return true if user is logged in and a part of the given team. Otherwise, returns false
-export async function isTeamMember(teamId : string) : Promise<boolean> {
-    const session = await auth.api.getSession({headers: await headers()});
+export async function isTeamMember(teamId: string): Promise<boolean> {
+	const session = await auth.api.getSession({ headers: await headers() });
 
-    if (!session) {
-        return false
-    }
+	if (!session) {
+		return false;
+	}
 
-    const team = await prisma.teams.findUnique({
-        where: {
-            teamId: teamId
-        },
-        include: {
-            users: {
-                include: {
-                    judgeProfile: {
-                        include: {
-                            user: true,
-                        },
-                    },
-                },
-            },
-        },
-    })
+	const team = await prisma.teams.findUnique({
+		where: {
+			teamId: teamId,
+		},
+		include: {
+			users: {
+				include: {
+					judgeProfile: {
+						include: {
+							user: true,
+						},
+					},
+				},
+			},
+		},
+	});
 
-    if (!team) {
-        return false
-    }
+	if (!team) {
+		return false;
+	}
 
-    return team.users.some(
-        (ut) => ut.judgeProfile.userId === session.user.id
-    );
-
+	return team.users.some((ut) => ut.judgeProfile.userId === session.user.id);
 }
 
 // Return true if successful. Otherwise, return false
-export async function createJudgeProfile() : Promise<boolean> {
-    try {
-        const session = await auth.api.getSession({headers: await headers()});
-        if (!session) {
-            return false
-        }
+export async function createJudgeProfile(): Promise<boolean> {
+	try {
+		const session = await auth.api.getSession({ headers: await headers() });
+		if (!session) {
+			return false;
+		}
 
-        await prisma.judgeProfile.create({
-            data: {userId: session.user.id},
-        })
+		await prisma.judgeProfile.create({
+			data: { userId: session.user.id },
+		});
 
-        return true
-    } catch (error) {
-        console.error(error)
-        return false
-    }
+		return true;
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
 }
 
 // Return teamId if successful. false if unsucessful
-export async function createTeam(teamData: Prisma.TeamsCreateInput, addSelf : boolean = false) : Promise<string | false> {
-    try {
-        const session = await auth.api.getSession({headers: await headers()});
-        if (!session) {
-            return false
-        }
+export async function createTeam(
+	teamData: Prisma.TeamsCreateInput,
+	addSelf: boolean = false,
+): Promise<string | false> {
+	try {
+		const session = await auth.api.getSession({ headers: await headers() });
+		if (!session) {
+			return false;
+		}
 
-        const userId = session.user.id
+		const userId = session.user.id;
 
-        const existingTeam = await prisma.teams.findFirst({
-            where: {
-                users: {
-                    some: {
-                        judgeProfile: {
-                            userId: userId
-                        }
-                    },
-                }
-            }
-        })
+		const existingTeam = await prisma.teams.findFirst({
+			where: {
+				users: {
+					some: {
+						judgeProfile: {
+							userId: userId,
+						},
+					},
+				},
+			},
+		});
 
-        if (existingTeam) {
-            return false
-        }
+		if (existingTeam) {
+			return false;
+		}
 
-        const newTeam = await prisma.teams.create({
-            data: teamData,
-        })
+		const newTeam = await prisma.teams.create({
+			data: teamData,
+		});
 
-        if (addSelf) {
-            if (userId == null) {
-                return false
-            }
+		// Add leader
 
-            await prisma.usersToTeams.create({
-                data: {
-                    judgeProfileId: userId,
-                    teamId: newTeam.teamId
-                },
-            })
-        }
+		await prisma.teams.update({
+			data: {
+				leader: { connect: { userId: session?.user.id } },
+			},
+			where: {
+				teamId: newTeam.teamId,
+			},
+		});
 
-        return newTeam.teamId
-    } catch (error) {
-        console.error(error)
-        return false
-    }
+		if (addSelf) {
+			if (userId == null) {
+				return false;
+			}
+
+			await prisma.usersToTeams.create({
+				data: {
+					judgeProfileId: userId,
+					teamId: newTeam.teamId,
+				},
+			});
+		}
+
+		return newTeam.teamId;
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
 }
 
 // Return true if successful. Otherwise, return false
 // Return false if user is not a member of the given team
-export async function updateTeam(teamId: string, teamData: Prisma.TeamsUpdateInput) : Promise<boolean> {
-    try {
-        if (!await isTeamMember(teamId)) {
-            return false
-        }
+export async function updateTeam(
+	teamId: string,
+	teamData: Prisma.TeamsUpdateInput,
+): Promise<boolean> {
+	try {
+		if (!(await isTeamMember(teamId))) {
+			return false;
+		}
 
-        await prisma.teams.update({
-            data: teamData,
-            where: { teamId: teamId, },
-            include: { users: { include: { judgeProfile: { include: { user: true } } } } },
-        })
+		await prisma.teams.update({
+			data: teamData,
+			where: { teamId: teamId },
+			include: {
+				users: { include: { judgeProfile: { include: { user: true } } } },
+			},
+		});
 
-        return true
-    } catch (error) {
-        console.error(error)
-        return false
-    }
+		return true;
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
 }
 
 // Return teamId if successful. Otherwise, return false
 // Return false if user is not logged in
-export async function joinTeam(inviteCode : string) : Promise<string | false> {
-    const session = await auth.api.getSession({headers: await headers()});
+export async function joinTeam(inviteCode: string): Promise<string | false> {
+	const session = await auth.api.getSession({ headers: await headers() });
 
-    if (!session) {
-        return false
-    }
+	if (!session) {
+		return false;
+	}
 
-    const team = await prisma.teams.findFirst({
-        where: {
-            invites: {
-                some: {
-                    code: inviteCode
-                }
-            }
-        },
-        include: {
-            users: true
-        }
-    })
+	const team = await prisma.teams.findFirst({
+		where: {
+			invites: {
+				some: {
+					code: inviteCode,
+				},
+			},
+		},
+		include: {
+			users: true,
+		},
+	});
 
-    if (!team) {
-        return false
-    }
-    if (team.users.length >= 4) {
-        return false
-    }
-    try {
-        const connection = await prisma.usersToTeams.create({
-            data: {
-                team: {
-                    connect: {
-                        teamId: team.teamId
-                    }
-                },
-                judgeProfile: {
-                    connect: {
-                        userId: session.user.id
-                    }
-                }
-            },
-        })
-    
-        if (connection) {
-            return team.teamId
-        } else {
-            return false
-        }
-    } catch (error) {
-        console.error(error);
-        return false
-    }
+	if (!team) {
+		return false;
+	}
+	if (team.users.length >= 4) {
+		return false;
+	}
+	try {
+		const connection = await prisma.usersToTeams.create({
+			data: {
+				team: {
+					connect: {
+						teamId: team.teamId,
+					},
+				},
+				judgeProfile: {
+					connect: {
+						userId: session.user.id,
+					},
+				},
+			},
+		});
+
+		if (connection) {
+			return team.teamId;
+		} else {
+			return false;
+		}
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
 }
 
 // Return partial team object if successful. Otherwise, return null
-export async function getTeamInfo(teamId : string) {
-    const team = await prisma.teams.findUnique({
-        where: { teamId },
-        select: {
-          teamId: true,
-          name: true,
-          description: true,
-          contact: true,
-          lookingForTeammates: true,
-          users: {
-            select: {
-              judgeProfileId: true,
-              judgeProfile: {
-                select: {
-                  user: {
-                    select: {
-                      name: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      });
+export async function getTeamInfo(teamId: string) {
+	const team = await prisma.teams.findUnique({
+		where: { teamId },
+		select: {
+			teamId: true,
+			name: true,
+			description: true,
+			leaderId: true,
+			contact: true,
+			lookingForTeammates: true,
+			users: {
+				select: {
+					judgeProfileId: true,
+					judgeProfile: {
+						select: {
+							user: {
+								select: {
+									name: true,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	});
 
-      if (!team) {
-        return null
-      }
+	if (!team) {
+		return null;
+	}
 
-      return team
+	return team;
 }
 
 export async function userSearch(search : string) {
@@ -326,89 +343,151 @@ export async function userSearch(search : string) {
 
 // Returns true if successful. Otherwise, return false
 // Return false if user is not a member of the given team
-export async function removeUserToTeams(judgeProfileId: string, teamId: string) : Promise<boolean> {
-    try {
+export async function removeUserToTeams(
+	judgeProfileId: string,
+	teamId: string,
+): Promise<boolean> {
+	try {
+		const session = await auth.api.getSession({ headers: await headers() });
 
-        if (!await isTeamMember(teamId)) {
-            return false
-        }
+		const team = await prisma.teams.findUnique({
+			where: {
+				teamId: teamId,
+			},
+		});
 
-        await prisma.usersToTeams.delete({
-            where: {
-            teamId_judgeProfileId: {
-                judgeProfileId,
-                teamId
-            }
-            },
-        });
+		if (
+			!team ||
+			(team.leaderId !== session?.user.id &&
+				judgeProfileId !== session?.user.id)
+		) {
+			// Cope
+			return false;
+		}
 
-        return true
-    } catch (error) {
-      console.error(error);
-      return false
-    }
+		await prisma.usersToTeams.delete({
+			where: {
+				teamId_judgeProfileId: {
+					judgeProfileId,
+					teamId,
+				},
+			},
+			select: {
+				team: {
+					select: {
+						users: true,
+					},
+				},
+			},
+		});
+
+		const newTeam = await prisma.teams.findUnique({
+			where: {
+				teamId: teamId,
+			},
+			select: {
+				users: true,
+			},
+		});
+
+		if (newTeam == null) {
+			// Cry like a baby
+			return false;
+		}
+
+		// Delete team if no members left
+		if (newTeam.users.length === 0) {
+			await prisma.invites.deleteMany({
+				where: {
+					teamId: teamId,
+				},
+			});
+
+			await prisma.teams.delete({
+				where: {
+					teamId: teamId,
+				},
+			});
+			// Replace leader if necessary
+		} else if (team.leaderId === judgeProfileId) {
+			await prisma.teams.update({
+				data: {
+					leaderId: newTeam.users[0].judgeProfileId,
+				},
+				where: {
+					teamId: teamId,
+				},
+			});
+		}
+
+		return true;
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
 }
 
 // Return invite code if successful. Otherwise, return false
 // Return false if user is not a member of the given team
-export async function getInviteCode(teamId: string) : Promise<string | false> {
-    if (!await isTeamMember(teamId)) {
-        return false
-    }
+export async function getInviteCode(teamId: string): Promise<string | false> {
+	if (!(await isTeamMember(teamId))) {
+		return false;
+	}
 
+	let invite = await prisma.invites.findFirst({
+		where: {
+			teamId: teamId,
+		},
+	});
 
-    let invite = await prisma.invites.findFirst({
-        where: {
-            teamId: teamId
-        }
-    })
-
-    if (!invite) {
-        invite = await prisma.invites.create({
-            data: {
-                teamId: teamId
-            }
-        })
-    }
-    return invite.code
+	if (!invite) {
+		invite = await prisma.invites.create({
+			data: {
+				teamId: teamId,
+			},
+		});
+	}
+	return invite.code;
 }
 
 // Return teamId if successful. Otherwise, return false
-export async function getTeamIdFromInvite(inviteCode: string): Promise<string | false> {
-    const team = await prisma.teams.findFirst({
-        where: {
-            invites: {
-                some: {
-                    code: inviteCode
-                }
-            }
-        }
-    })
+export async function getTeamIdFromInvite(
+	inviteCode: string,
+): Promise<string | false> {
+	const team = await prisma.teams.findFirst({
+		where: {
+			invites: {
+				some: {
+					code: inviteCode,
+				},
+			},
+		},
+	});
 
-    if (team) {
-        return team.teamId
-    }
-    
-    return false
+	if (team) {
+		return team.teamId;
+	}
+
+	return false;
 }
 
 export async function resetInviteCode(inviteCode: string): Promise<boolean> {
-    const teamId = await getTeamIdFromInvite(inviteCode);
+	const teamId = await getTeamIdFromInvite(inviteCode);
     
-    if (!teamId) return false
-    if (!await isTeamMember(teamId)) return false
+    if (!teamId) return false;
+	if (!(await isTeamMember(teamId))) return false;
 
-    try {
-        await prisma.invites.delete({
-            where: {
-                code: inviteCode
-            }
-        })
-        return true
-    } catch (error) {
-        console.error(error)
-        return false
-    }
+	try {
+		await prisma.invites.delete({
+			where: {
+				code: inviteCode,
+			},
+		});
+		return true;
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
 }
 
 export async function removeUser(judgeProfileId: string) : Promise<boolean> {
@@ -420,7 +499,7 @@ export async function addPermissions(judgeProfileId: string, permissionLevel: st
     switch (permissionLevel) {
         case "judge":
             // requires admin and hackathonId input
-            if (await isAdmin(hackathonId) && hackathonId != "") {
+            if (await isAdmin(hackathonId) && hackathonId !== "") {
                 const res = await prisma.hackathonsRole.create({
                     data: {
                         hackathonId: hackathonId,
@@ -438,7 +517,7 @@ export async function addPermissions(judgeProfileId: string, permissionLevel: st
             break
         case "admin":
             // requires superadmin and hackathonId input
-            if (await isSuperAdmin() && hackathonId != "") {
+            if (await isSuperAdmin() && hackathonId !== "") {
                 const res = await prisma.hackathonsRole.create({
                     data: {
                         hackathonId: hackathonId,
@@ -483,7 +562,7 @@ export async function removePermissions(judgeProfileId: string, permissionLevel:
     switch (permissionLevel) {
         case "judge":
             // requires admin and hackathonId input
-            if (await isAdmin(hackathonId) && hackathonId != "") {
+            if (await isAdmin(hackathonId) && hackathonId !== "") {
                 const res = await prisma.hackathonsRole.deleteMany({
                     where: {
                         hackathonId: hackathonId,
@@ -501,7 +580,7 @@ export async function removePermissions(judgeProfileId: string, permissionLevel:
             break
         case "admin":
             // requires superadmin and hackathonId input
-            if (await isSuperAdmin() && hackathonId != "") {
+            if (await isSuperAdmin() && hackathonId !== "") {
                 const res = await prisma.hackathonsRole.deleteMany({
                     where: {
                         hackathonId: hackathonId,

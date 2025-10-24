@@ -1,0 +1,9 @@
+{
+	"recommendations": [
+		"biomejs.biome",
+		"bradlc.vscode-tailwindcss",
+		"usernamehw.errorlens",
+		"ms-vsliveshare.vsliveshare",
+		"YoavBls.pretty-ts-errors"
+	]
+}
