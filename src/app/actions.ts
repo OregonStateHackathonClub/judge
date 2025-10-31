@@ -370,33 +370,44 @@ export async function userSearch(search: string) {
 
 // Returns true if successful. Otherwise, return false
 // Return false if user is not a member of the given team
-export async function removeUserToTeams(
-	hackathon_participantId: string,
+export async function removeUserFromTeam(
+	teamMemberId: string,
 	teamId: string,
 ): Promise<boolean> {
 	try {
 		const session = await auth.api.getSession({ headers: await headers() });
-
+		
 		const team = await prisma.team.findUnique({
 			where: {
 				id: teamId,
+			}
+		});
+		
+		const target_team_member = await prisma.team_member.findUnique({
+			where: { id: teamMemberId },
+			include: { hackathon_participant: true }
+		});
+
+		const hackathon_participant = await prisma.hackathon_participant.findFirst({
+			where: {
+				userId: session?.user.id,
+				hackathonId: team?.hackathonId
 			},
 		});
 
-		if (
-			!team ||
-			(team.creatorId !== session?.user.id &&
-				hackathon_participantId !== session?.user.id)
+		if ( !team || !target_team_member || !hackathon_participant ||
+			(team.creatorId !== hackathon_participant.id &&
+				target_team_member?.hackathon_participant.id !== hackathon_participant.id)
 		) {
 			// Cope
+			console.error("Failed to remove user from team")
 			return false;
 		}
-
 		await prisma.team.update({
 			where: { id: teamId },
 			data: {
 				team_member: {
-				disconnect: { id: hackathon_participantId },
+					delete: { id: target_team_member.id },
 				},
 			},
 		});

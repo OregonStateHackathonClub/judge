@@ -12,7 +12,7 @@ import {
 	getInviteCode,
 	getTeamInfo,
 	isTeamMember,
-	removeUserToTeams,
+	removeUserFromTeam,
 	resetInviteCode,
 	updateTeam,
 } from "@/app/actions";
@@ -138,15 +138,15 @@ export default function TeamPageClient({
 		}
 	};
 
-	const removeUser = async (judgeProfileId: string) => {
-		const result = await removeUserToTeams(judgeProfileId, teamId);
+	const removeUser = async (team_member_id: string) => {
+		const result = await removeUserFromTeam(team_member_id, teamId);
 		if (result) {
 			setTeam((prevTeam) => {
 				if (!prevTeam) return prevTeam;
 				return {
 					...prevTeam,
 					users: prevTeam.team_member.filter(
-						(u) => u.id !== judgeProfileId,
+						(u) => u.id !== team_member_id,
 					),
 				};
 			});
@@ -158,6 +158,8 @@ export default function TeamPageClient({
 			if (!(await isTeamMember(teamId))) {
 				window.location.reload();
 			}
+		} else {
+			toast.error("Failed to remove user.")
 		}
 	};
 
