@@ -295,9 +295,9 @@ export async function getTeamInfo(id: string) {
 			id: true,
 			name: true,
 			description: true,
-			// leaderId: true, TODO
-			contact: true,
 			lookingForTeammates: true,
+			contact: true,
+			creatorId: true,
 			team_member: {
 				select: {
 					id: true,
