@@ -1,68 +1,72 @@
 "use server";
 
-import { type Prisma, PrismaClient, Role } from "@prisma/client";
+import { type Prisma, PrismaClient, UserRole } from "@prisma/client";
+import { randomUUID } from "crypto";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth"; // your Better Auth instance
 
 const prisma = new PrismaClient({});
 
-export async function isSuperAdmin() : Promise<boolean> {
-    const session = await auth.api.getSession({headers: await headers()});
+export async function isSuperAdmin(): Promise<boolean> {
+	const session = await auth.api.getSession({ headers: await headers() });
 
-    if (!session) {
-        return false
-    }
+	if (!session) {
+		return false;
+	}
 
-    const judgeProfile = await prisma.judgeProfile.findUnique({
-        where: {
-            userId: session.user.id
-        }
-    })
+	const user = await prisma.user.findUnique({
+		where: {
+			id: session.user.id,
+		},
+	});
 
-    if (!judgeProfile) return false
+	if (!user) return false;
 
-    return judgeProfile.superAdmin
+	return user.role === UserRole.ADMIN;
+	// Used to be SUPERADMIN
 }
 
-export async function isAdmin(hackathonId: string) : Promise<boolean> {
+export async function isAdmin(hackathonId: string): Promise<boolean> {
+	if (await isSuperAdmin()) return true;
+	return false;
+	// TODO
+	// const session = await auth.api.getSession({ headers: await headers() });
 
-    if (await isSuperAdmin()) return true
+	// if (!session) {
+	// 	return false;
+	// }
 
-    const session = await auth.api.getSession({headers: await headers()});
+	// const hackathon_participant = await prisma.hackathonsRole.findFirst({
+	// 	where: {
+	// 		hackathon_participantId: session.user.id,
+	// 		hackathonId: hackathonId,
+	// 	},
+	// });
 
-    if (!session) {
-        return false
-    }
+	// if (!hackathon_participant) return false;
 
-    const judgeProfile = await prisma.hackathonsRole.findFirst({
-        where: {
-            judgeProfileId: session.user.id,
-            hackathonId: hackathonId
-        }
-    })
-
-    if (!judgeProfile) return false
-
-    return judgeProfile.role === Role.ADMIN
+	// return hackathon_participant.role === Role.ADMIN;
 }
 
-export async function isJudge(hackathonId: string) : Promise<boolean> {
-    const session = await auth.api.getSession({headers: await headers()});
+export async function isJudge(hackathonId: string): Promise<boolean> {
+	return false;
+	// TODO
+	// const session = await auth.api.getSession({ headers: await headers() });
 
-    if (!session) {
-        return false
-    }
+	// if (!session) {
+	// 	return false;
+	// }
 
-    const judgeProfile = await prisma.hackathonsRole.findFirst({
-        where: {
-            judgeProfileId: session.user.id,
-            hackathonId: hackathonId
-        }
-    })
+	// const hackathon_participant = await prisma.hackathonsRole.findFirst({
+	// 	where: {
+	// 		hackathon_participantId: session.user.id,
+	// 		hackathonId: hackathonId,
+	// 	},
+	// });
 
-    if (!judgeProfile) return false
+	// if (!hackathon_participant) return false;
 
-    return judgeProfile.role === Role.JUDGE
+	// return hackathon_participant.role === Role.JUDGE;
 }
 
 // Return true if user is logged in and a part of the given team. Otherwise, returns false
@@ -73,14 +77,14 @@ export async function isTeamMember(teamId: string): Promise<boolean> {
 		return false;
 	}
 
-	const team = await prisma.teams.findUnique({
+	const team = await prisma.team.findUnique({
 		where: {
-			teamId: teamId,
+			id: teamId,
 		},
 		include: {
-			users: {
+			team_member: {
 				include: {
-					judgeProfile: {
+					hackathon_participant: {
 						include: {
 							user: true,
 						},
@@ -94,19 +98,27 @@ export async function isTeamMember(teamId: string): Promise<boolean> {
 		return false;
 	}
 
-	return team.users.some((ut) => ut.judgeProfile.userId === session.user.id);
+	return team.team_member.some(
+		(ut) => ut.hackathon_participant.userId === session.user.id,
+	);
 }
 
 // Return true if successful. Otherwise, return false
-export async function createJudgeProfile(): Promise<boolean> {
+export async function createHackathonParticipant(
+	hackathonId: string,
+): Promise<boolean> {
 	try {
 		const session = await auth.api.getSession({ headers: await headers() });
 		if (!session) {
 			return false;
 		}
 
-		await prisma.judgeProfile.create({
-			data: { userId: session.user.id },
+		await prisma.hackathon_participant.create({
+			data: {
+				id: randomUUID(),
+				userId: session.user.id,
+				hackathonId: hackathonId,
+			},
 		});
 
 		return true;
@@ -118,7 +130,7 @@ export async function createJudgeProfile(): Promise<boolean> {
 
 // Return teamId if successful. false if unsucessful
 export async function createTeam(
-	teamData: Prisma.TeamsCreateInput,
+	teamData: any,
 	addSelf: boolean = false,
 ): Promise<string | false> {
 	try {
@@ -129,11 +141,11 @@ export async function createTeam(
 
 		const userId = session.user.id;
 
-		const existingTeam = await prisma.teams.findFirst({
+		const existingTeam = await prisma.team.findFirst({
 			where: {
-				users: {
+				team_member: {
 					some: {
-						judgeProfile: {
+						hackathon_participant: {
 							userId: userId,
 						},
 					},
@@ -145,35 +157,49 @@ export async function createTeam(
 			return false;
 		}
 
-		const newTeam = await prisma.teams.create({
+		// const data = {
+		// 	name: teamData.name,
+		// 	description: teamData.description,
+		// 	lookingForTeammates: teamData.lft,
+		// 	contact: teamData.contact,
+		// 	// leader: { connect: { userId: session?.user.id } },
+		// };
+
+		teamData.id = randomUUID()
+		teamData.creatorId = session.user.id
+		// teamData.hackathon = "2026" // TODO
+		teamData.updatedAt = new Date();
+
+		const newTeam = await prisma.team.create({
 			data: teamData,
 		});
 
 		// Add leader
 
-		await prisma.teams.update({
-			data: {
-				leader: { connect: { userId: session?.user.id } },
-			},
-			where: {
-				teamId: newTeam.teamId,
-			},
-		});
+		// TODO
+		// await prisma.team.update({
+		// 	data: {
+		// 		leader: { connect: { userId: session?.user.id } },
+		// 	},
+		// 	where: {
+		// 		teamId: newTeam.teamId,
+		// 	},
+		// });
 
-		if (addSelf) {
-			if (userId == null) {
-				return false;
-			}
+		// if (addSelf) {
+		// 	if (userId == null) {
+		// 		return false;
+		// 	}
 
-			await prisma.usersToTeams.create({
-				data: {
-					judgeProfileId: userId,
-					teamId: newTeam.teamId,
-				},
-			});
-		}
+		// 	await prisma.usersToTeams.create({
+		// 		data: {
+		// 			hackathon_participantId: userId,
+		// 			teamId: newTeam.teamId,
+		// 		},
+		// 	});
+		// }
 
-		return newTeam.teamId;
+		return newTeam.id;
 	} catch (error) {
 		console.error(error);
 		return false;
@@ -184,18 +210,20 @@ export async function createTeam(
 // Return false if user is not a member of the given team
 export async function updateTeam(
 	teamId: string,
-	teamData: Prisma.TeamsUpdateInput,
+	teamData: Prisma.teamUpdateInput,
 ): Promise<boolean> {
 	try {
 		if (!(await isTeamMember(teamId))) {
 			return false;
 		}
 
-		await prisma.teams.update({
+		await prisma.team.update({
 			data: teamData,
-			where: { teamId: teamId },
+			where: { id: teamId },
 			include: {
-				users: { include: { judgeProfile: { include: { user: true } } } },
+				team_member: {
+					include: { hackathon_participant: { include: { user: true } } },
+				},
 			},
 		});
 
@@ -215,43 +243,41 @@ export async function joinTeam(inviteCode: string): Promise<string | false> {
 		return false;
 	}
 
-	const team = await prisma.teams.findFirst({
+	const team = await prisma.team.findFirst({
 		where: {
-			invites: {
+			invite: {
 				some: {
 					code: inviteCode,
 				},
 			},
 		},
 		include: {
-			users: true,
+			team_member: true,
 		},
 	});
 
 	if (!team) {
 		return false;
 	}
-	if (team.users.length >= 4) {
+	if (team.team_member.length >= 4) {
 		return false;
 	}
 	try {
-		const connection = await prisma.usersToTeams.create({
+		const connection = await prisma.team.update({
+			where: {
+				id: team.id,
+			},
 			data: {
-				team: {
+				team_member: {
 					connect: {
-						teamId: team.teamId,
-					},
-				},
-				judgeProfile: {
-					connect: {
-						userId: session.user.id,
+						id: session.user.id,
 					},
 				},
 			},
 		});
 
 		if (connection) {
-			return team.teamId;
+			return team.id;
 		} else {
 			return false;
 		}
@@ -262,20 +288,20 @@ export async function joinTeam(inviteCode: string): Promise<string | false> {
 }
 
 // Return partial team object if successful. Otherwise, return null
-export async function getTeamInfo(teamId: string) {
-	const team = await prisma.teams.findUnique({
-		where: { teamId },
+export async function getTeamInfo(id: string) {
+	const team = await prisma.team.findUnique({
+		where: { id },
 		select: {
-			teamId: true,
+			id: true,
 			name: true,
 			description: true,
-			leaderId: true,
+			// leaderId: true, TODO
 			contact: true,
 			lookingForTeammates: true,
-			users: {
+			team_member: {
 				select: {
-					judgeProfileId: true,
-					judgeProfile: {
+					id: true,
+					hackathon_participant: {
 						select: {
 							user: {
 								select: {
@@ -296,97 +322,87 @@ export async function getTeamInfo(teamId: string) {
 	return team;
 }
 
-export async function userSearch(search : string) {
-    if (!isSuperAdmin()) return false
+export async function userSearch(search: string) {
+	if (!isSuperAdmin()) return false;
 
-    const users = await prisma.user.findMany({
-        where: {
-            OR: [
-            {
-                name: {
-                    contains: search,
-                    mode: "insensitive",
-                },
-            },
-            {
-                id: {
-                    contains: search,
-                    mode: "insensitive",
-                },
-            },
-            {
-                email: {
-                    contains: search,
-                    mode: "insensitive",
-                },
-            }
-            ],
-        },
-        select: {
-            name: true,
-            id: true,
-            email: true,
-            judgeProfile: {
-                select: {
-                    superAdmin: true
-                }
-            }
-        }
-    });
+	const users = await prisma.user.findMany({
+		where: {
+			OR: [
+				{
+					name: {
+						contains: search,
+						mode: "insensitive",
+					},
+				},
+				{
+					id: {
+						contains: search,
+						mode: "insensitive",
+					},
+				},
+				{
+					email: {
+						contains: search,
+						mode: "insensitive",
+					},
+				},
+			],
+		},
+		select: {
+			name: true,
+			id: true,
+			email: true,
+			role: true,
+		},
+	});
 
-      if (!users) {
-        return null
-      }
+	if (!users) {
+		return null;
+	}
 
-      return users
+	return users;
 }
 
 // Returns true if successful. Otherwise, return false
 // Return false if user is not a member of the given team
 export async function removeUserToTeams(
-	judgeProfileId: string,
+	hackathon_participantId: string,
 	teamId: string,
 ): Promise<boolean> {
 	try {
 		const session = await auth.api.getSession({ headers: await headers() });
 
-		const team = await prisma.teams.findUnique({
+		const team = await prisma.team.findUnique({
 			where: {
-				teamId: teamId,
+				id: teamId,
 			},
 		});
 
 		if (
-			!team ||
-			(team.leaderId !== session?.user.id &&
-				judgeProfileId !== session?.user.id)
+			!team || false
+			// (team.leaderId !== session?.user.id &&
+			// 	hackathon_participantId !== session?.user.id)
+			// TODO
 		) {
 			// Cope
 			return false;
 		}
 
-		await prisma.usersToTeams.delete({
-			where: {
-				teamId_judgeProfileId: {
-					judgeProfileId,
-					teamId,
-				},
-			},
-			select: {
-				team: {
-					select: {
-						users: true,
-					},
+		await prisma.team.update({
+			where: { id: teamId },
+			data: {
+				team_member: {
+				disconnect: { id: hackathon_participantId },
 				},
 			},
 		});
 
-		const newTeam = await prisma.teams.findUnique({
+		const newTeam = await prisma.team.findUnique({
 			where: {
-				teamId: teamId,
+				id: teamId,
 			},
 			select: {
-				users: true,
+				team_member: true,
 			},
 		});
 
@@ -396,29 +412,31 @@ export async function removeUserToTeams(
 		}
 
 		// Delete team if no members left
-		if (newTeam.users.length === 0) {
-			await prisma.invites.deleteMany({
+		if (newTeam.team_member.length === 0) {
+			await prisma.invite.deleteMany({
 				where: {
 					teamId: teamId,
 				},
 			});
 
-			await prisma.teams.delete({
+			await prisma.team.delete({
 				where: {
-					teamId: teamId,
+					id: teamId,
 				},
 			});
 			// Replace leader if necessary
-		} else if (team.leaderId === judgeProfileId) {
-			await prisma.teams.update({
-				data: {
-					leaderId: newTeam.users[0].judgeProfileId,
-				},
-				where: {
-					teamId: teamId,
-				},
-			});
 		}
+		// TODO
+		// else if (team.leaderId === hackathon_participantId) {
+		// 	await prisma.teams.update({
+		// 		data: {
+		// 			leaderId: newTeam.users[0].hackathon_participantId,
+		// 		},
+		// 		where: {
+		// 			teamId: teamId,
+		// 		},
+		// 	});
+		// }
 
 		return true;
 	} catch (error) {
@@ -434,15 +452,17 @@ export async function getInviteCode(teamId: string): Promise<string | false> {
 		return false;
 	}
 
-	let invite = await prisma.invites.findFirst({
+	let invite = await prisma.invite.findFirst({
 		where: {
 			teamId: teamId,
 		},
 	});
 
 	if (!invite) {
-		invite = await prisma.invites.create({
+		invite = await prisma.invite.create({
 			data: {
+				id: randomUUID(),
+				code: randomUUID(),
 				teamId: teamId,
 			},
 		});
@@ -454,9 +474,9 @@ export async function getInviteCode(teamId: string): Promise<string | false> {
 export async function getTeamIdFromInvite(
 	inviteCode: string,
 ): Promise<string | false> {
-	const team = await prisma.teams.findFirst({
+	const team = await prisma.team.findFirst({
 		where: {
-			invites: {
+			invite: {
 				some: {
 					code: inviteCode,
 				},
@@ -465,7 +485,7 @@ export async function getTeamIdFromInvite(
 	});
 
 	if (team) {
-		return team.teamId;
+		return team.id;
 	}
 
 	return false;
@@ -473,12 +493,12 @@ export async function getTeamIdFromInvite(
 
 export async function resetInviteCode(inviteCode: string): Promise<boolean> {
 	const teamId = await getTeamIdFromInvite(inviteCode);
-    
-    if (!teamId) return false;
+
+	if (!teamId) return false;
 	if (!(await isTeamMember(teamId))) return false;
 
 	try {
-		await prisma.invites.delete({
+		await prisma.invite.delete({
 			where: {
 				code: inviteCode,
 			},
@@ -490,131 +510,144 @@ export async function resetInviteCode(inviteCode: string): Promise<boolean> {
 	}
 }
 
-export async function removeUser(judgeProfileId: string) : Promise<boolean> {
-    // Require superadmin
-    return false
+// TODO
+export async function removeUser(
+	id: string,
+): Promise<boolean> {
+	// Require superadmin
+	return false;
 }
 
-export async function addPermissions(judgeProfileId: string, permissionLevel: string, hackathonId: string = "") : Promise<boolean> {
-    switch (permissionLevel) {
-        case "judge":
-            // requires admin and hackathonId input
-            if (await isAdmin(hackathonId) && hackathonId !== "") {
-                const res = await prisma.hackathonsRole.create({
-                    data: {
-                        hackathonId: hackathonId,
-                        judgeProfileId: judgeProfileId,
-                        role: Role.JUDGE,
-                    },
-                })
+export async function addPermissions(
+	hackathon_participantId: string,
+	permissionLevel: string,
+	hackathonId: string = "",
+): Promise<boolean> {
+	// TODO
+	// switch (permissionLevel) {
+	// 	case "judge":
+	// 		// requires admin and hackathonId input
+	// 		if ((await isAdmin(hackathonId)) && hackathonId !== "") {
+	// 			const res = await prisma.hackathonsRole.create({
+	// 				data: {
+	// 					hackathonId: hackathonId,
+	// 					hackathon_participantId: hackathon_participantId,
+	// 					role: Role.JUDGE,
+	// 				},
+	// 			});
 
-                if (!res) {
-                    return false
-                }
-            } else {
-                return false
-            }
-            break
-        case "admin":
-            // requires superadmin and hackathonId input
-            if (await isSuperAdmin() && hackathonId !== "") {
-                const res = await prisma.hackathonsRole.create({
-                    data: {
-                        hackathonId: hackathonId,
-                        judgeProfileId: judgeProfileId,
-                        role: Role.ADMIN,
-                    },
-                })
+	// 			if (!res) {
+	// 				return false;
+	// 			}
+	// 		} else {
+	// 			return false;
+	// 		}
+	// 		break;
+	// 	case "admin":
+	// 		// requires superadmin and hackathonId input
+	// 		if ((await isSuperAdmin()) && hackathonId !== "") {
+	// 			const res = await prisma.hackathonsRole.create({
+	// 				data: {
+	// 					hackathonId: hackathonId,
+	// 					hackathon_participantId: hackathon_participantId,
+	// 					role: Role.ADMIN,
+	// 				},
+	// 			});
 
-                if (!res) {
-                    return false
-                }
-            } else {
-                return false
-            }
-            break
-        case "superadmin":
-            if (await isSuperAdmin()) {
-                const res = await prisma.judgeProfile.update({
-                    data: {
-                        superAdmin: true,
-                    },
-                    where: {
-                        userId: judgeProfileId
-                    }
-                })
+	// 			if (!res) {
+	// 				return false;
+	// 			}
+	// 		} else {
+	// 			return false;
+	// 		}
+	// 		break;
+	// 	case "superadmin":
+	// 		if (await isSuperAdmin()) {
+	// 			const res = await prisma.hackathon_participant.update({
+	// 				data: {
+	// 					superAdmin: true,
+	// 				},
+	// 				where: {
+	// 					userId: hackathon_participantId,
+	// 				},
+	// 			});
 
-                if (!res) {
-                    return false
-                }
-            } else {
-                return false
-            }
-            break
-        default:
-            return false
-    }
+	// 			if (!res) {
+	// 				return false;
+	// 			}
+	// 		} else {
+	// 			return false;
+	// 		}
+	// 		break;
+	// 	default:
+	// 		return false;
+	// }
 
-    return true
+	return true;
 }
 
-export async function removePermissions(judgeProfileId: string, permissionLevel: string, hackathonId: string = "") : Promise<boolean> {
-    switch (permissionLevel) {
-        case "judge":
-            // requires admin and hackathonId input
-            if (await isAdmin(hackathonId) && hackathonId !== "") {
-                const res = await prisma.hackathonsRole.deleteMany({
-                    where: {
-                        hackathonId: hackathonId,
-                        judgeProfileId: judgeProfileId,
-                        role: Role.JUDGE,
-                    },
-                })
+export async function removePermissions(
+	hackathon_participantId: string,
+	permissionLevel: string,
+	hackathonId: string = "",
+): Promise<boolean> {
+	// TODO
+	// switch (permissionLevel) {
+	// 	case "judge":
+	// 		// requires admin and hackathonId input
+	// 		if ((await isAdmin(hackathonId)) && hackathonId !== "") {
+	// 			const res = await prisma.hackathonsRole.deleteMany({
+	// 				where: {
+	// 					hackathonId: hackathonId,
+	// 					hackathon_participantId: hackathon_participantId,
+	// 					role: Role.JUDGE,
+	// 				},
+	// 			});
 
-                if (!res) {
-                    return false
-                }
-            } else {
-                return false
-            }
-            break
-        case "admin":
-            // requires superadmin and hackathonId input
-            if (await isSuperAdmin() && hackathonId !== "") {
-                const res = await prisma.hackathonsRole.deleteMany({
-                    where: {
-                        hackathonId: hackathonId,
-                        judgeProfileId: judgeProfileId,
-                        role: Role.ADMIN,
-                    },
-                })
+	// 			if (!res) {
+	// 				return false;
+	// 			}
+	// 		} else {
+	// 			return false;
+	// 		}
+	// 		break;
+	// 	case "admin":
+	// 		// requires superadmin and hackathonId input
+	// 		if ((await isSuperAdmin()) && hackathonId !== "") {
+	// 			const res = await prisma.hackathonsRole.deleteMany({
+	// 				where: {
+	// 					hackathonId: hackathonId,
+	// 					hackathon_participantId: hackathon_participantId,
+	// 					role: Role.ADMIN,
+	// 				},
+	// 			});
 
-                if (!res) {
-                    return false
-                }
-            } else {
-                return false
-            }
-            break
-        case "superadmin":
-            if (await isSuperAdmin()) {
-                const res = await prisma.judgeProfile.update({
-                    data: {
-                        superAdmin: false,
-                    },
-                    where: {
-                        userId: judgeProfileId
-                    }
-                })
+	// 			if (!res) {
+	// 				return false;
+	// 			}
+	// 		} else {
+	// 			return false;
+	// 		}
+	// 		break;
+	// 	case "superadmin":
+	// 		if (await isSuperAdmin()) {
+	// 			const res = await prisma.hackathon_participant.update({
+	// 				data: {
+	// 					superAdmin: false,
+	// 				},
+	// 				where: {
+	// 					userId: hackathon_participantId,
+	// 				},
+	// 			});
 
-                if (!res) {
-                    return false
-                }
-            }
-            break
-        default:
-            return false
-    }
+	// 			if (!res) {
+	// 				return false;
+	// 			}
+	// 		}
+	// 		break;
+	// 	default:
+	// 		return false;
+	// }
 
-    return true
+	return true;
 }

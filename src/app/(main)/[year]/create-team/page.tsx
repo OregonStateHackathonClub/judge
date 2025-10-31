@@ -8,7 +8,6 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-
 import { createTeam } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,8 +70,8 @@ export default function Home({
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		const teamData = {
 			name: values.name,
-			lookingForTeammates: values.lft,
 			description: values.description,
+			lookingForTeammates: values.lft,
 			contact: values.contact,
 			hackathon: { connect: { id: hackathonId } },
 			// leader: { connect: { userId: session?.user.id } },
