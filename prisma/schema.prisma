@@ -200,7 +200,7 @@ model team {
   description         String?
   lookingForTeammates Boolean       @default(false)
   contact             String?
-  creatorId           String
+  leaderId           String
   hackathonId         String
   createdAt           DateTime      @default(now())
   updatedAt           DateTime
@@ -240,5 +240,5 @@ enum ShirtSize {
 
 enum UserRole {
   USER
-  ADMIN
+  SUPERADMIN
 }
