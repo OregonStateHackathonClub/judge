@@ -24,7 +24,7 @@ interface Submission {
 }
 
 interface Hackathon {
-	submissions: Submission[];
+	submission: Submission[];
 	bannerImage?: string;
 	sponsorLogos?: string[];
 }
@@ -34,7 +34,7 @@ interface SubmissionsClientProps {
 	tracks: Track[];
 	year: string;
 	userTeamId?: string | null;
-	teamSubmission?: { id: string; status: string } | null;
+	teamSubmission?: { id: string } | null;
 }
 const sponsors = [
 	{
@@ -68,22 +68,22 @@ export default function SubmissionsClient({
 }: SubmissionsClientProps) {
 	const [selectedTrack, setSelectedTrack] = useState("all");
 	const [filteredSubmissions, setFilteredSubmissions] = useState<Submission[]>(
-		hackathon.submissions,
+		hackathon.submission,
 	);
 	const router = useRouter();
 
 	useEffect(() => {
 		if (selectedTrack === "all") {
-			setFilteredSubmissions(hackathon.submissions);
+			setFilteredSubmissions(hackathon.submission);
 		} else {
-			const filtered = hackathon.submissions.filter((submission: Submission) =>
+			const filtered = hackathon.submission.filter((submission: Submission) =>
 				submission.trackLinks?.some(
 					(link) => String(link.track.id) === String(selectedTrack),
 				),
 			);
 			setFilteredSubmissions(filtered);
 		}
-	}, [selectedTrack, hackathon.submissions]);
+	}, [selectedTrack, hackathon.submission]);
 
 	const handleTrackChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		setSelectedTrack(e.target.value);
@@ -198,14 +198,12 @@ export default function SubmissionsClient({
 							)}
 							{teamSubmission && (
 								<>
-									{teamSubmission.status === "submitted" && (
-										<Link
-											href={`/${year}/projects/${teamSubmission.id}`}
-											className="rounded-xl border border-green-500/40 bg-neutral-900/60 px-4 py-2 font-semibold text-green-300 text-sm transition hover:border-green-400 hover:text-white"
-										>
-											View Submission
-										</Link>
-									)}
+									<Link
+										href={`/${year}/projects/${teamSubmission.id}`}
+										className="rounded-xl border border-green-500/40 bg-neutral-900/60 px-4 py-2 font-semibold text-green-300 text-sm transition hover:border-green-400 hover:text-white"
+									>
+										View Submission
+									</Link>
 									<Link
 										href={`/${year}/submission?edit=${teamSubmission.id}`}
 										className="rounded-xl border border-blue-500/40 bg-neutral-900/60 px-4 py-2 font-semibold text-blue-300 text-sm transition hover:border-blue-400 hover:text-white"

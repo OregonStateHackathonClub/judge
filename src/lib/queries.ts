@@ -6,7 +6,7 @@
 import { prisma } from "./prisma";
 
 export const getCurrentHackathonId = async () => {
-	const currentHackathon = await prisma.hackathons.findFirst({
+	const currentHackathon = await prisma.hackathon.findFirst({
 		orderBy: {
 			id: "desc",
 		},

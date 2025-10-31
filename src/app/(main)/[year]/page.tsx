@@ -22,52 +22,54 @@ export default async function Page(props: {
 	}
 
 	let userTeamId: string | null = null;
-	let teamSubmission: { id: string; status: string } | null = null;
+	let teamSubmission: { id: string } | null = null;
 	if (session?.user) {
-		const teamMembership = await prisma.teams.findFirst({
+		const teamMembership = await prisma.team.findFirst({
 			where: {
 				hackathonId: yearParam,
-				users: {
+				team_member: {
 					some: {
-						judgeProfileId: session.user.id,
+						id: session.user.id,
 					},
 				},
 			},
 			select: {
-				teamId: true,
+				id: true,
 				submission: {
-					select: { id: true, status: true },
+					select: { id: true },
 				},
 			},
 		});
 		if (teamMembership) {
-			userTeamId = teamMembership.teamId;
+			userTeamId = teamMembership.id;
 			if (teamMembership.submission) {
 				teamSubmission = teamMembership.submission;
 			}
 		}
 	}
 
-	const hackathon = await prisma.hackathons.findFirst({
+	const hackathon = await prisma.hackathon.findFirst({
 		where: { id: yearParam },
 		include: {
 			tracks: true,
-			submissions: {
-				where: {
-					status: {
-						not: "draft", // Only include submissions where status is NOT "DRAFT"
-					},
-				},
+			submission: {
+				// where: {
+				// 	status: {
+				// 		not: "draft", // Only include submissions where status is NOT "DRAFT"
+				// 	},
+				// },
 				include: {
-					trackLinks: {
+					submission_track: {
 						include: {
 							track: true,
 						},
 					},
 				},
-				orderBy: {
-					score: "desc",
-				},
+				// orderBy: {
+				// 	score: {
+				// 			totalScore: 'desc'
+				// 	},
+				// },
 			},
 		},
 	});
