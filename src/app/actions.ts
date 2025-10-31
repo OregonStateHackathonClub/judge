@@ -130,8 +130,7 @@ export async function createHackathonParticipant(
 
 // Return teamId if successful. false if unsucessful
 export async function createTeam(
-	teamData: any,
-	addSelf: boolean = false,
+	teamData: any
 ): Promise<string | false> {
 	try {
 		const session = await auth.api.getSession({ headers: await headers() });
@@ -140,6 +139,31 @@ export async function createTeam(
 		}
 
 		const userId = session.user.id;
+
+		// Create hackathon participant if doesnt exist already
+		let hackathon_participant = await prisma.hackathon_participant.findFirst({
+			where: {
+				userId: userId
+			}
+		})
+
+		if (!hackathon_participant) {
+			hackathon_participant = await prisma.hackathon_participant.create({
+				data: {
+					id: randomUUID(),
+					user: {
+						connect: { id: session.user.id }
+					},
+					hackathon: {
+						connect: { id: teamData.hackathonId }
+					}
+				}
+			})
+		}
+
+		if (!hackathon_participant) {
+			return false
+		}
 
 		const existingTeam = await prisma.team.findFirst({
 			where: {
@@ -157,47 +181,28 @@ export async function createTeam(
 			return false;
 		}
 
-		// const data = {
-		// 	name: teamData.name,
-		// 	description: teamData.description,
-		// 	lookingForTeammates: teamData.lft,
-		// 	contact: teamData.contact,
-		// 	// leader: { connect: { userId: session?.user.id } },
-		// };
-
-		teamData.id = randomUUID()
-		teamData.creatorId = session.user.id
-		// teamData.hackathon = "2026" // TODO
-		teamData.updatedAt = new Date();
-
 		const newTeam = await prisma.team.create({
-			data: teamData,
+			data: {
+				id: randomUUID(),
+				name: teamData.name,
+				description: teamData.description,
+				lookingForTeammates: teamData.lft,
+				contact: teamData.contact,
+				creatorId: session.user.id,
+				hackathon: {
+					connect: { id: teamData.hackathonId }
+				},
+				team_member: {
+					create: {
+						id: randomUUID(),
+						hackathon_participant: {
+							connect: { id: hackathon_participant.id },
+						},
+					},
+				},
+				updatedAt: new Date()
+			},
 		});
-
-		// Add leader
-
-		// TODO
-		// await prisma.team.update({
-		// 	data: {
-		// 		leader: { connect: { userId: session?.user.id } },
-		// 	},
-		// 	where: {
-		// 		teamId: newTeam.teamId,
-		// 	},
-		// });
-
-		// if (addSelf) {
-		// 	if (userId == null) {
-		// 		return false;
-		// 	}
-
-		// 	await prisma.usersToTeams.create({
-		// 		data: {
-		// 			hackathon_participantId: userId,
-		// 			teamId: newTeam.teamId,
-		// 		},
-		// 	});
-		// }
 
 		return newTeam.id;
 	} catch (error) {
@@ -379,10 +384,9 @@ export async function removeUserToTeams(
 		});
 
 		if (
-			!team || false
-			// (team.leaderId !== session?.user.id &&
-			// 	hackathon_participantId !== session?.user.id)
-			// TODO
+			!team ||
+			(team.creatorId !== session?.user.id &&
+				hackathon_participantId !== session?.user.id)
 		) {
 			// Cope
 			return false;
@@ -426,17 +430,16 @@ export async function removeUserToTeams(
 			});
 			// Replace leader if necessary
 		}
-		// TODO
-		// else if (team.leaderId === hackathon_participantId) {
-		// 	await prisma.teams.update({
-		// 		data: {
-		// 			leaderId: newTeam.users[0].hackathon_participantId,
-		// 		},
-		// 		where: {
-		// 			teamId: teamId,
-		// 		},
-		// 	});
-		// }
+		else if (team.creatorId === hackathon_participantId) {
+			await prisma.team.update({
+				data: {
+					creatorId: newTeam.team_member[0].id,
+				},
+				where: {
+					id: teamId,
+				},
+			});
+		}
 
 		return true;
 	} catch (error) {

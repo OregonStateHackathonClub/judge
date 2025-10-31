@@ -43,18 +43,18 @@ const formSchema = z.object({
 });
 
 type TeamInfo = {
-	teamId: string;
+	id: string;
 	name: string;
 	description: string | null;
-	leaderId: string | null;
-	contact: string | null;
 	lookingForTeammates: boolean;
-	users: TeamUser[];
+	contact: string | null;
+	creatorId: string | null;
+	team_member: TeamMember[];
 };
 
-type TeamUser = {
-	judgeProfileId: string;
-	judgeProfile: {
+type TeamMember = {
+	id: string;
+	hackathon_participant: {
 		user: {
 			name: string;
 		};
@@ -145,8 +145,8 @@ export default function TeamPageClient({
 				if (!prevTeam) return prevTeam;
 				return {
 					...prevTeam,
-					users: prevTeam.users.filter(
-						(u) => u.judgeProfileId !== judgeProfileId,
+					users: prevTeam.team_member.filter(
+						(u) => u.id !== judgeProfileId,
 					),
 				};
 			});
@@ -210,15 +210,15 @@ export default function TeamPageClient({
 					<div className="rounded-xl bg-white p-6 shadow-md">
 						<h2 className="mb-2 font-semibold text-xl">Members</h2>
 						<ul className="space-y-2">
-							{team.users.map((u: TeamUser) => (
+							{team.team_member.map((u: TeamMember) => (
 								<li
-									key={u.judgeProfileId}
+									key={u.id}
 									className="flex items-center justify-between"
 								>
 									<span className="flex gap-2">
-										{u.judgeProfile?.user.name}
+										{u.hackathon_participant?.user.name}
 
-										{teamMember && u.judgeProfileId === team.leaderId && (
+										{teamMember && u.id === team.creatorId && (
 											<Image
 												src="/crown.png"
 												alt="Team leader"
@@ -228,26 +228,26 @@ export default function TeamPageClient({
 										)}
 									</span>
 
-									{session?.user.id === u.judgeProfileId && (
+									{session?.user.id === u.id && (
 										<Image
 											src="/leave-red.png"
 											alt="Leave team"
 											width={20}
 											height={20}
 											className="cursor-pointer"
-											onClick={() => removeUser(u.judgeProfileId)}
+											onClick={() => removeUser(u.id)}
 										/>
 									)}
 
-									{session?.user.id === team.leaderId &&
-										session?.user.id !== u.judgeProfileId && (
+									{session?.user.id === team.creatorId &&
+										session?.user.id !== u.id && (
 											<Image
 												src="/trashcan-red.png"
 												alt="Remove user"
 												width={20}
 												height={20}
 												className="cursor-pointer"
-												onClick={() => removeUser(u.judgeProfileId)}
+												onClick={() => removeUser(u.id)}
 											/>
 										)}
 								</li>
@@ -255,7 +255,7 @@ export default function TeamPageClient({
 						</ul>
 
 						{/* Invite Link */}
-						{team.users.length < 4 && teamMember && (
+						{team.team_member.length < 4 && teamMember && (
 							<Popover open={open} onOpenChange={setOpen}>
 								<PopoverTrigger asChild>
 									<Button variant="outline" className="mt-4 w-full rounded-xl">

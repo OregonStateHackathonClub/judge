@@ -73,10 +73,10 @@ export default function Home({
 			description: values.description,
 			lookingForTeammates: values.lft,
 			contact: values.contact,
-			hackathon: { connect: { id: hackathonId } },
-			// leader: { connect: { userId: session?.user.id } },
+			hackathonId: hackathonId,
+			creatorId: session?.user.id,
 		};
-		const teamId = await createTeam(teamData, true);
+		const teamId = await createTeam(teamData);
 
 		if (!teamId) {
 			toast.error("Failed to create team");
